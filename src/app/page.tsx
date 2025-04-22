@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Send } from "lucide-react"
 import { useEffect, useState } from "react"
 import { fetchStockData } from "@/lib/utils"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { GridIcon, ListIcon } from "lucide-react"
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ["SPY", "QQQ", "AAPL", "NVDA", "ORCL", "WMT", "NFLX"]
@@ -36,6 +38,7 @@ export default function TradingDashboard() {
   const [stockData, setStockData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [usingMockData, setUsingMockData] = useState(false)
+  const [favoritesView, setFavoritesView] = useState<"grid" | "list">("grid")
 
   // Fetch data for the selected ticker and timeframe
   useEffect(() => {
@@ -124,23 +127,55 @@ export default function TradingDashboard() {
 
           {/* Favorites List */}
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2">Favorites</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-              {FAVORITE_TICKERS.map((ticker) => (
-                <Card
-                  key={ticker}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedTicker === ticker ? "ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => handleTickerSelect(ticker)}
-                >
-                  <div className="p-3 text-center">
-                    <div className="font-bold">{ticker}</div>
-                    <TickerPrice ticker={ticker} selected={selectedTicker === ticker} />
-                  </div>
-                </Card>
-              ))}
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">Favorites</h3>
+              <Tabs defaultValue="grid" onValueChange={(v) => setFavoritesView(v as "grid" | "list")}>
+                <TabsList className="h-8">
+                  <TabsTrigger value="grid" className="flex items-center w-10">
+                    <GridIcon className="h-4 w-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="list" className="flex items-center w-10">
+                    <ListIcon className="h-4 w-4" />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
+
+            {favoritesView === "grid" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                {FAVORITE_TICKERS.map((ticker) => (
+                  <Card
+                    key={ticker}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedTicker === ticker ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => handleTickerSelect(ticker)}
+                  >
+                    <div className="p-3 text-center">
+                      <div className="font-bold">{ticker}</div>
+                      <TickerPrice ticker={ticker} selected={selectedTicker === ticker} />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {FAVORITE_TICKERS.map((ticker) => (
+                  <Card
+                    key={ticker}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedTicker === ticker ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => handleTickerSelect(ticker)}
+                  >
+                    <div className="p-3 flex justify-between items-center">
+                      <div className="font-bold">{ticker}</div>
+                      <TickerPrice ticker={ticker} selected={selectedTicker === ticker} listView={true} />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -233,7 +268,7 @@ export default function TradingDashboard() {
 }
 
 // Small component to show ticker prices in the favorites list
-function TickerPrice({ ticker, selected }: { ticker: string; selected: boolean }) {
+function TickerPrice({ ticker, selected, listView = false }: { ticker: string; selected: boolean; listView?: boolean }) {
   const [price, setPrice] = useState<string | null>(null)
   const [change, setChange] = useState<number>(0)
   const [loading, setLoading] = useState(true)
@@ -255,7 +290,7 @@ function TickerPrice({ ticker, selected }: { ticker: string; selected: boolean }
   if (loading || !price) return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>
 
   return (
-    <div className={`text-xs ${selected ? "font-medium" : ""}`}>
+    <div className={`${listView ? 'flex items-center gap-3' : 'text-xs'} ${selected ? "font-medium" : ""}`}>
       <div>${price}</div>
       <div className={change >= 0 ? "text-green-600" : "text-red-600"}>
         {change >= 0 ? "+" : ""}
