@@ -2,7 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set up your environment:
+
+1. Get an API key from [Alpha Vantage](https://www.alphavantage.co/support/#api-key) (free tier available)
+2. Create a `.env.local` file in the root directory with your API key:
+```
+ALPHA_VANTAGE_API_KEY=your_api_key_here
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -19,6 +27,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Real-time Stock Data
+
+This application uses the Alpha Vantage API to fetch real-time stock data. The free tier has limitations:
+- 5 API requests per minute
+- 500 requests per day
+
+If you see errors or missing data, you may have exceeded these limits.
 
 ## Learn More
 

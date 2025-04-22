@@ -8,7 +8,7 @@ import { StockChart } from "@/components/stock-chart"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Send } from "lucide-react"
 import { useEffect, useState } from "react"
-import { generateMockStockData } from "../lib/mock-data"
+import { fetchStockData } from "@/lib/utils"
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ["SPY", "QQQ", "AAPL", "NVDA", "ORCL", "WMT", "NFLX"]
@@ -35,33 +35,20 @@ export default function TradingDashboard() {
   const [timeframe, setTimeframe] = useState("1d")
   const [stockData, setStockData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [usingMockData, setUsingMockData] = useState(false)
 
   // Fetch data for the selected ticker and timeframe
   useEffect(() => {
-    setLoading(true)
-
-    // Simulate API call with setTimeout
-    setTimeout(() => {
-      const mockData = generateMockStockData(selectedTicker, timeframe)
-
-      const firstPrice = Number.parseFloat(mockData[0]?.price || "0")
-      const lastPrice = Number.parseFloat(mockData[mockData.length - 1]?.price || "0")
-      const priceChange = lastPrice - firstPrice
-      const percentChange = (priceChange / firstPrice) * 100
-
-      setStockData({
-        symbol: selectedTicker,
-        timeframe,
-        data: mockData,
-        currentPrice: lastPrice.toFixed(2),
-        priceChange: priceChange.toFixed(2),
-        percentChange: percentChange.toFixed(2),
-        isPositive: priceChange >= 0,
-      })
-
-      setLoading(false)
-    }, 800)
-  }, [selectedTicker, timeframe])
+    setLoading(true);
+    
+    // Use the utility function with fallback to mock data
+    fetchStockData(selectedTicker, timeframe)
+      .then(data => {
+        setStockData(data);
+        setUsingMockData(data.isMockData || false);
+        setLoading(false);
+      });
+  }, [selectedTicker, timeframe]);
 
   // Handle ticker selection
   const handleTickerSelect = (ticker: string) => {
@@ -77,6 +64,11 @@ export default function TradingDashboard() {
     <div className="flex flex-col h-screen max-h-screen bg-slate-50">
       <header className="border-b bg-white p-4">
         <h1 className="text-2xl font-bold">Trading AI Dashboard</h1>
+        {usingMockData && (
+          <div className="text-xs text-amber-600 mt-1">
+            Using mock data (API limit reached or service unavailable)
+          </div>
+        )}
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -244,27 +236,23 @@ export default function TradingDashboard() {
 function TickerPrice({ ticker, selected }: { ticker: string; selected: boolean }) {
   const [price, setPrice] = useState<string | null>(null)
   const [change, setChange] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Base price varies by symbol
-    const baseMap: Record<string, number> = {
-      SPY: 500,
-      QQQ: 430,
-      NVDA: 800,
-      AAPL: 200,
-      ORCL: 120,
-      WMT: 70,
-      NFLX: 650,
-    }
+    setLoading(true);
+    
+    // Use the utility function with fallback to mock data
+    fetchStockData(ticker, '1d')
+      .then(data => {
+        if (data) {
+          setPrice(data.currentPrice);
+          setChange(parseFloat(data.percentChange));
+        }
+        setLoading(false);
+      });
+  }, [ticker]);
 
-    const basePrice = baseMap[ticker] || Math.floor(Math.random() * 1000) + 100
-    const randomChange = Math.random() * 4 - 2 // Random change between -2% and +2%
-
-    setPrice(basePrice.toFixed(2))
-    setChange(randomChange)
-  }, [ticker])
-
-  if (!price) return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>
+  if (loading || !price) return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>
 
   return (
     <div className={`text-xs ${selected ? "font-medium" : ""}`}>
