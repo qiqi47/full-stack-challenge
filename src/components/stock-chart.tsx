@@ -119,12 +119,12 @@ export function StockChart({ symbol, timeframe, data }: StockChartProps) {
             color: isPositive ? "hsl(var(--chart-1))" : "hsl(var(--chart-3))",
           },
         }}
-        className="h-full"
+        className="h-full w-full"
       >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={formattedData}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            margin={{ top: 10, right: 0, left: 0, bottom: 10 }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >

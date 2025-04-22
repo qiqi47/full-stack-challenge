@@ -117,8 +117,8 @@ export default function TradingDashboard() {
               </div>
             </div>
 
-            <div className="p-4">
-              <div className="h-[400px]">
+            <div className="p-0">
+              <div className="h-[400px] w-full">
                 {loading ? (
                   <div className="h-full flex items-center justify-center">
                     <div className="animate-pulse text-muted-foreground">Loading chart...</div>
