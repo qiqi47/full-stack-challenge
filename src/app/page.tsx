@@ -15,7 +15,7 @@ import Watchlist from '@/components/watchlist';
 import StockCard from '@/components/stock-card';
 import TradingViewChart from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
-
+import Chatbox from '@/components/chatbox';
 // Favorite tickers to display
 const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
 
@@ -128,101 +128,12 @@ export default function TradingDashboard() {
 
                 <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
                     <div className="flex flex-col h-full">
-                        <div className="border-b p-4">
-                            <h2 className="text-lg font-semibold">Trading Assistant</h2>
-                        </div>
-
-                        <ScrollArea className="flex-1 p-4">
-                            {messages.length === 0 && (
-                                <div className="flex h-full items-center justify-center text-center p-4">
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-muted-foreground">
-                                            Ask me about stocks, market trends, or request
-                                            information for any ticker.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {messages.map((message) => (
-                                <div key={message.id} className="mb-4">
-                                    <div className="flex items-start gap-3">
-                                        <Avatar
-                                            className={
-                                                message.role === 'user'
-                                                    ? 'bg-primary'
-                                                    : 'bg-muted'
-                                            }
-                                        >
-                                            <AvatarFallback>
-                                                {message.role === 'user' ? 'U' : 'AI'}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <div className="font-semibold">
-                                                {message.role === 'user' ? 'You' : 'AI'}
-                                            </div>
-                                            <div className="text-sm">{message.content}</div>
-                                        </div>
-                                    </div>
-
-                                    {message.toolInvocations?.map((toolInvocation) => {
-                                        const { toolName, toolCallId, state } = toolInvocation;
-                                        if (state === 'result' && toolName === 'getStockInfo') {
-                                            const { result } = toolInvocation;
-                                            return (
-                                                <div key={toolCallId} className="mt-4 ml-10">
-                                                    <Card className="p-3">
-                                                        <div className="text-sm">
-                                                            <div className="font-semibold">
-                                                                {result.symbol}
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span>Price:</span>
-                                                                <span className="font-medium">
-                                                                    ${result.price}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span>Change:</span>
-                                                                <span
-                                                                    className={
-                                                                        Number(result.change) >=
-                                                                        0
-                                                                            ? 'text-green-600'
-                                                                            : 'text-red-600'
-                                                                    }
-                                                                >
-                                                                    {Number(result.change) >= 0
-                                                                        ? '+'
-                                                                        : ''}
-                                                                    {result.change}%
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </Card>
-                                                </div>
-                                            );
-                                        }
-                                        return null;
-                                    })}
-                                </div>
-                            ))}
-                        </ScrollArea>
-
-                        <div className="border-t p-4">
-                            <form onSubmit={handleSubmit} className="flex gap-2">
-                                <Input
-                                    value={input}
-                                    onChange={handleInputChange}
-                                    placeholder="Ask about stocks..."
-                                    className="flex-1"
-                                />
-                                <Button type="submit" size="icon">
-                                    <Send className="h-4 w-4" />
-                                </Button>
-                            </form>
-                        </div>
+                        <Chatbox
+                            messages={messages}
+                            input={input}
+                            handleInputChange={handleInputChange}
+                            handleSubmit={handleSubmit}
+                        />
                     </div>
                 </div>
             </div>
@@ -236,60 +147,3 @@ export default function TradingDashboard() {
         </div>
     );
 }
-
-// Small component to show ticker prices in the favorites list
-// function TickerPrice({
-//     ticker,
-//     selected,
-//     listView = false,
-// }: {
-//     ticker: string;
-//     selected: boolean;
-//     listView?: boolean;
-// }) {
-//     const [price, setPrice] = useState<string | null>(null);
-//     const [change, setChange] = useState<number>(0);
-//     const [loading, setLoading] = useState(true);
-
-//     useEffect(() => {
-//         setLoading(true);
-
-//         // Use the utility function with fallback to mock data
-//         fetchStockData(ticker, '1d').then((data) => {
-//             if (data) {
-//                 setPrice(data.currentPrice);
-//                 setChange(parseFloat(data.percentChange));
-//             }
-//             setLoading(false);
-//         });
-//     }, [ticker]);
-
-//     if (loading || !price)
-//         return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>;
-
-//     return (
-//         <>
-//             {listView ? (
-//                 <>
-//                     <td className="px-4 py-3 text-right">${price}</td>
-//                     <td
-//                         className={`px-4 py-3 text-right ${
-//                             change >= 0 ? 'text-green-600' : 'text-red-600'
-//                         }`}
-//                     >
-//                         {change >= 0 ? '+' : ''}
-//                         {change.toFixed(2)}%
-//                     </td>
-//                 </>
-//             ) : (
-//                 <div className={`text-xs ${selected ? 'font-medium' : ''}`}>
-//                     <div>${price}</div>
-//                     <div className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
-//                         {change >= 0 ? '+' : ''}
-//                         {change.toFixed(2)}%
-//                     </div>
-//                 </div>
-//             )}
-//         </>
-//     );
-// }
