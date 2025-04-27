@@ -4,14 +4,14 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { StockChart } from '@/components/stock-chart';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { fetchStockData } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { GridIcon, ListIcon } from 'lucide-react';
 import { Header } from '@/components/ui/header';
+import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service';
+import Watchlist from '@/components/watchlist';
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
@@ -39,19 +39,31 @@ export default function TradingDashboard() {
     const [stockData, setStockData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [usingMockData, setUsingMockData] = useState(false);
-    const [favoritesView, setFavoritesView] = useState<'grid' | 'list'>('grid');
+    const [watchlistId, setWatchlistId] = useState<string>('');
 
-    // Fetch data for the selected ticker and timeframe
     useEffect(() => {
-        setLoading(true);
+        const fetchData = async () => {
+            setLoading(true);
+            const response = await fetchWatchlist();
+            if (Array.isArray(response) && response.length > 0) {
+                setWatchlistId(response[0].id);
+            }
+        };
+        fetchData();
+    }, []);
 
-        // Use the utility function with fallback to mock data
-        fetchStockData(selectedTicker, timeframe).then((data) => {
-            setStockData(data);
-            setUsingMockData(data.isMockData || false);
-            setLoading(false);
-        });
-    }, [selectedTicker, timeframe]);
+    useEffect(() => {
+        if (!watchlistId) return; // If no id, don't execute
+
+        const fetchData = async () => {
+            setLoading(true);
+            const response = await fetchWatchlistById(watchlistId);
+            if (response) {
+                setStockData(response);
+            }
+        };
+        fetchData();
+    }, [watchlistId]); // Run when watchlistId changes
 
     // Handle ticker selection
     const handleTickerSelect = (ticker: string) => {
@@ -62,13 +74,12 @@ export default function TradingDashboard() {
     const handleTimeframeChange = (value: string) => {
         setTimeframe(value);
     };
-
     return (
         <div className="flex flex-col h-screen max-h-screen bg-slate-50">
             <Header usingMockData={usingMockData} />
+            {/* Main content area (70% width) */}
 
             <div className="flex flex-1 overflow-hidden">
-                {/* Main content area (70% width) */}
                 <div className="w-full lg:w-[70%] p-4 overflow-auto">
                     {/* Main Chart */}
                     <Card className="w-full mb-4">
@@ -120,11 +131,7 @@ export default function TradingDashboard() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <StockChart
-                                        symbol={stockData.symbol}
-                                        timeframe={stockData.timeframe}
-                                        data={stockData.data}
-                                    />
+                                    <span>123</span>
                                 )}
                             </div>
                         </div>
@@ -134,77 +141,15 @@ export default function TradingDashboard() {
                     <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-lg font-semibold">Favorites</h3>
-                            <Tabs
-                                defaultValue="grid"
-                                onValueChange={(v) => setFavoritesView(v as 'grid' | 'list')}
-                            >
-                                <TabsList className="h-8">
-                                    <TabsTrigger
-                                        value="grid"
-                                        className="flex items-center w-10"
-                                    >
-                                        <GridIcon className="h-4 w-4" />
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="list"
-                                        className="flex items-center w-10"
-                                    >
-                                        <ListIcon className="h-4 w-4" />
-                                    </TabsTrigger>
-                                </TabsList>
-                            </Tabs>
                         </div>
-
-                        {favoritesView === 'grid' ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                                {FAVORITE_TICKERS.map((ticker) => (
-                                    <Card
-                                        key={ticker}
-                                        className={`cursor-pointer transition-all hover:shadow-md ${
-                                            selectedTicker === ticker
-                                                ? 'ring-2 ring-primary'
-                                                : ''
-                                        }`}
-                                        onClick={() => handleTickerSelect(ticker)}
-                                    >
-                                        <div className="p-3 text-center">
-                                            <div className="font-bold">{ticker}</div>
-                                            <TickerPrice
-                                                ticker={ticker}
-                                                selected={selectedTicker === ticker}
-                                            />
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                {FAVORITE_TICKERS.map((ticker) => (
-                                    <Card
-                                        key={ticker}
-                                        className={`cursor-pointer transition-all hover:shadow-md ${
-                                            selectedTicker === ticker
-                                                ? 'ring-2 ring-primary'
-                                                : ''
-                                        }`}
-                                        onClick={() => handleTickerSelect(ticker)}
-                                    >
-                                        <div className="p-3 flex justify-between items-center">
-                                            <div className="font-bold">{ticker}</div>
-                                            <TickerPrice
-                                                ticker={ticker}
-                                                selected={selectedTicker === ticker}
-                                                listView={true}
-                                            />
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
+                        <Watchlist
+                            stocks={stockData?.assets}
+                            selectedTicker={selectedTicker}
+                            handleTickerSelect={handleTickerSelect}
+                        />
                     </div>
                 </div>
 
-                {/* Chat sidebar (30% width) */}
                 <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
                     <div className="flex flex-col h-full">
                         <div className="border-b p-4">
@@ -307,56 +252,68 @@ export default function TradingDashboard() {
             </div>
 
             {/* Mobile chat button (visible on small screens) */}
-            <div className="lg:hidden fixed bottom-4 right-4">
+            {/* <div className="lg:hidden fixed bottom-4 right-4">
                 <Button className="rounded-full h-12 w-12 shadow-lg">
                     <Send className="h-5 w-5" />
                 </Button>
-            </div>
+            </div> */}
         </div>
     );
 }
 
 // Small component to show ticker prices in the favorites list
-function TickerPrice({
-    ticker,
-    selected,
-    listView = false,
-}: {
-    ticker: string;
-    selected: boolean;
-    listView?: boolean;
-}) {
-    const [price, setPrice] = useState<string | null>(null);
-    const [change, setChange] = useState<number>(0);
-    const [loading, setLoading] = useState(true);
+// function TickerPrice({
+//     ticker,
+//     selected,
+//     listView = false,
+// }: {
+//     ticker: string;
+//     selected: boolean;
+//     listView?: boolean;
+// }) {
+//     const [price, setPrice] = useState<string | null>(null);
+//     const [change, setChange] = useState<number>(0);
+//     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        setLoading(true);
+//     useEffect(() => {
+//         setLoading(true);
 
-        // Use the utility function with fallback to mock data
-        fetchStockData(ticker, '1d').then((data) => {
-            if (data) {
-                setPrice(data.currentPrice);
-                setChange(parseFloat(data.percentChange));
-            }
-            setLoading(false);
-        });
-    }, [ticker]);
+//         // Use the utility function with fallback to mock data
+//         fetchStockData(ticker, '1d').then((data) => {
+//             if (data) {
+//                 setPrice(data.currentPrice);
+//                 setChange(parseFloat(data.percentChange));
+//             }
+//             setLoading(false);
+//         });
+//     }, [ticker]);
 
-    if (loading || !price)
-        return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>;
+//     if (loading || !price)
+//         return <div className="h-4 animate-pulse bg-gray-200 rounded w-full mt-1"></div>;
 
-    return (
-        <div
-            className={`${listView ? 'flex items-center gap-3' : 'text-xs'} ${
-                selected ? 'font-medium' : ''
-            }`}
-        >
-            <div>${price}</div>
-            <div className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {change >= 0 ? '+' : ''}
-                {change.toFixed(2)}%
-            </div>
-        </div>
-    );
-}
+//     return (
+//         <>
+//             {listView ? (
+//                 <>
+//                     <td className="px-4 py-3 text-right">${price}</td>
+//                     <td
+//                         className={`px-4 py-3 text-right ${
+//                             change >= 0 ? 'text-green-600' : 'text-red-600'
+//                         }`}
+//                     >
+//                         {change >= 0 ? '+' : ''}
+//                         {change.toFixed(2)}%
+//                     </td>
+//                 </>
+//             ) : (
+//                 <div className={`text-xs ${selected ? 'font-medium' : ''}`}>
+//                     <div>${price}</div>
+//                     <div className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
+//                         {change >= 0 ? '+' : ''}
+//                         {change.toFixed(2)}%
+//                     </div>
+//                 </div>
+//             )}
+//         </>
+//     );
+// }
