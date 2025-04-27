@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { GridIcon, ListIcon } from 'lucide-react';
 import { Header } from '@/components/ui/header';
 import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service';
 import Watchlist from '@/components/watchlist';
 import StockCard from '@/components/stock-card';
+import TradingViewChart from '@/components/TradingViewChart';
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
@@ -92,60 +93,10 @@ export default function TradingDashboard() {
                 <div className="w-full lg:w-[70%] p-4 overflow-auto">
                     {/* Main Chart */}
                     <Card className="w-full mb-4">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <div>
-                                <h2 className="text-xl font-bold">{selectedTicker}</h2>
-                                {!loading && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-2xl font-bold">
-                                            ${stockData?.currentPrice}
-                                        </span>
-                                        <span
-                                            className={`px-2 py-0.5 rounded text-sm ${
-                                                stockData?.isPositive
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}
-                                        >
-                                            {stockData?.isPositive ? '+' : ''}
-                                            {stockData?.percentChange}%
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-wrap gap-1">
-                                {TIME_OPTIONS.map((option) => (
-                                    <Button
-                                        key={option.value}
-                                        variant={
-                                            timeframe === option.value ? 'default' : 'outline'
-                                        }
-                                        size="sm"
-                                        onClick={() => handleTimeframeChange(option.value)}
-                                        className="min-w-[40px]"
-                                    >
-                                        {option.label}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="p-0">
-                            <div className="h-[400px] w-full">
-                                {loading ? (
-                                    <div className="h-full flex items-center justify-center">
-                                        <div className="animate-pulse text-muted-foreground">
-                                            Loading chart...
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <StockCard
-                                        symbol={selectedTicker || ''}
-                                        timeframe={timeframe}
-                                    />
-                                )}
-                            </div>
+                        <div className="h-[400px] w-full">
+                            <TradingViewChart
+                                symbol={selectedTicker || stockData?.assets[0].symbol}
+                            />
                         </div>
                     </Card>
 
