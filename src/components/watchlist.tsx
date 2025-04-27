@@ -25,8 +25,8 @@ const Watchlist = ({
         );
     }
 
-    const handleRemoveStock = (symbol: string) => {
-        removeSymbolFromWatchlist(watchlistId, symbol);
+    const handleRemoveStock = async (symbol: string) => {
+        await removeSymbolFromWatchlist(watchlistId, symbol);
         refetchWatchlist();
     };
 

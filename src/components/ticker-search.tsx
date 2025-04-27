@@ -10,12 +10,14 @@ interface TickerSearchProps {
     watchlistId: string;
     refetchWatchlist: () => void;
     currentSymbols: string[];
+    handleTickerSelect: (ticker: string) => void;
 }
 
 const TickerSearch: React.FC<TickerSearchProps> = ({
     watchlistId,
     refetchWatchlist,
     currentSymbols,
+    handleTickerSelect,
 }) => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [suggestions, setSuggestions] = useState<typeof STOCK_SUGGESTIONS>([]);
@@ -60,6 +62,7 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
     const handleSelectSuggestion = (ticker: string) => {
         setSearchQuery(ticker);
         setShowSuggestions(false);
+        handleTickerSelect(ticker);
     };
 
     const handleAddToWatchlist = async (ticker: string) => {
