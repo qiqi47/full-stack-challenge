@@ -79,11 +79,6 @@ export default function TradingDashboard() {
         setSelectedTicker(ticker as any);
     };
 
-    // Handle timeframe change
-    const handleTimeframeChange = (value: string) => {
-        setTimeframe(value);
-    };
-
     return (
         <div className="flex flex-col h-screen max-h-screen bg-slate-50">
             <Header usingMockData={usingMockData} />
