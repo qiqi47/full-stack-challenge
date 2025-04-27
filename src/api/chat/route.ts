@@ -88,13 +88,20 @@ export async function sendChatMessage(message: string) {
                     : 0
             }`;
         } else if (name === 'add_to_watchlist') {
-            await addSymbolToWatchlist(
+            const addResult = await addSymbolToWatchlist(
                 '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',
                 parsedArgs.symbol.toUpperCase(),
             );
-            result = `Added ${parsedArgs.symbol.toUpperCase()} to your watchlist ✅`;
-            action = 'add_to_watchlist';
-            symbol = parsedArgs.symbol.toUpperCase();
+
+            if (addResult.success) {
+                result = `Added ${parsedArgs.symbol.toUpperCase()} to your watchlist ✅`;
+                action = 'add_to_watchlist';
+                symbol = parsedArgs.symbol.toUpperCase();
+            } else if (addResult.error === 'duplicate_symbol') {
+                result = addResult.message;
+                action = null; // No action needed as symbol is already in watchlist
+                symbol = parsedArgs.symbol.toUpperCase();
+            }
         } else if (name === 'remove_from_watchlist') {
             await removeSymbolFromWatchlist(
                 '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',

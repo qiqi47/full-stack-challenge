@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { sendChatMessage } from '@/api/chat/route'; // 记得路径对上！
+import { sendChatMessage } from '@/api/chat/route'; 
 
 export default function Chatbox({ refetchWatchlist }: { refetchWatchlist?: () => void }) {
     const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>(
