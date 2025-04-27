@@ -81,26 +81,38 @@ export async function sendChatMessage(message: string) {
 
         if (name === 'get_stock_price') {
             const stockPrice = await fetchLatestStockBySymbol(parsedArgs.symbol.toUpperCase());
-            console.log(stockPrice);
-            result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
-                'bar' in stockPrice && stockPrice.bar && 'c' in stockPrice.bar
-                    ? stockPrice.bar.c
-                    : 0
-            }`;
-        } else if (name === 'add_to_watchlist') {
-            const addResult = await addSymbolToWatchlist(
-                '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',
-                parsedArgs.symbol.toUpperCase(),
-            );
 
-            if (addResult.success) {
-                result = `Added ${parsedArgs.symbol.toUpperCase()} to your watchlist ✅`;
-                action = 'add_to_watchlist';
+            if (stockPrice.isValid) {
+                result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
+                    'bar' in stockPrice && stockPrice.bar && 'c' in stockPrice.bar
+                        ? stockPrice.bar.c
+                        : 0
+                }`;
                 symbol = parsedArgs.symbol.toUpperCase();
-            } else if (addResult.error === 'duplicate_symbol') {
-                result = addResult.message;
-                action = null; // No action needed as symbol is already in watchlist
-                symbol = parsedArgs.symbol.toUpperCase();
+                action = 'get_stock_price';
+            } else {
+                result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
+            }
+        } else if (name === 'add_to_watchlist') {
+            const stockCheck = await fetchLatestStockBySymbol(parsedArgs.symbol.toUpperCase());
+
+            if (!stockCheck.isValid) {
+                result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
+            } else {
+                const addResult = await addSymbolToWatchlist(
+                    '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',
+                    parsedArgs.symbol.toUpperCase(),
+                );
+
+                if (addResult.success) {
+                    result = `Added ${parsedArgs.symbol.toUpperCase()} to your watchlist ✅`;
+                    action = 'add_to_watchlist';
+                    symbol = parsedArgs.symbol.toUpperCase();
+                } else if (addResult.error === 'duplicate_symbol') {
+                    result = addResult.message;
+                    action = null;
+                    symbol = parsedArgs.symbol.toUpperCase();
+                }
             }
         } else if (name === 'remove_from_watchlist') {
             await removeSymbolFromWatchlist(

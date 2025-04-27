@@ -129,7 +129,10 @@ export default function TradingDashboard() {
 
                 <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
                     <div className="flex flex-col h-full">
-                        <Chatbox refetchWatchlist={refetchWatchlist} />
+                        <Chatbox
+                            refetchWatchlist={refetchWatchlist}
+                            handleTickerSelect={handleTickerSelect}
+                        />
                     </div>
                 </div>
             </div>

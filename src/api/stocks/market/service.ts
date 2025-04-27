@@ -1,5 +1,6 @@
 import { alpacaMarketApi } from '../axiosConfig';
 import { marketEndpoints } from './constant';
+import axios, { AxiosError } from 'axios';
 
 // Mock data for fallback
 const mockStockData = {
@@ -41,11 +42,32 @@ export const fetchLatestStockBySymbol = async (symbol: string) => {
         const response = await alpacaMarketApi.get(
             marketEndpoints.latest.replace('{symbol}', symbol.toUpperCase()),
         );
-        return response;
+
+        // If we get here, the API call succeeded
+        return {
+            ...response,
+            symbol: symbol.toUpperCase(),
+            isValid: true,
+        };
     } catch (error) {
         console.error('API error:', error);
+
+        // Check if this is a 404 (Not Found) error, which indicates an invalid symbol
+        const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            return {
+                isValid: false,
+                symbol: symbol.toUpperCase(),
+                error: 'Invalid symbol',
+            };
+        }
+
         console.log('Returning mock data instead');
-        // Return mock data for development/testing
-        return { ...mockStockData, symbol: symbol.toUpperCase() };
+        // Return mock data for development/testing with validation flag
+        return {
+            ...mockStockData,
+            symbol: symbol.toUpperCase(),
+            isValid: process.env.NODE_ENV === 'development', // Only mark as valid in development
+        };
     }
 };
