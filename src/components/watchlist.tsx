@@ -84,6 +84,7 @@ const Watchlist = ({
                             <TableCell className="text-right">
                                 <Button
                                     variant="outline"
+                                    className="cursor-pointer"
                                     size="icon"
                                     onClick={(e) => {
                                         e.stopPropagation();

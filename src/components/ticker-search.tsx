@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Star } from 'lucide-react';
 import { addSymbolToWatchlist } from '@/api/stocks/trading/service';
 import { STOCK_SUGGESTIONS } from '@/data/stock';
 
@@ -87,13 +87,6 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchli
                         onFocus={() => setShowSuggestions(suggestions.length > 0)}
                     />
                 </div>
-                <Button
-                    onClick={handleAddToWatchlist}
-                    disabled={!searchQuery.trim() || isAdding}
-                    size="icon"
-                >
-                    <Plus className="h-4 w-4" />
-                </Button>
             </div>
 
             {showSuggestions && (
@@ -104,13 +97,29 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchli
                     {suggestions.map((stock) => (
                         <div
                             key={stock.symbol}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
                             onClick={() => handleSelectSuggestion(stock.symbol)}
                         >
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="text-gray-500 text-sm truncate ml-2">
-                                {stock.name}
-                            </span>
+                            <div className="flex flex-row items-center gap-2">
+                                <img src={stock.logoUrl} className="w-8 h-8 rounded-full" />
+                                <span className="font-medium">{stock.symbol}</span>
+                            </div>
+                            <div className="flex flex-row gap-4 items-center ">
+                                <span className="text-gray-500 text-sm truncate ml-2">
+                                    {stock.name}
+                                </span>
+                                <Button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToWatchlist();
+                                    }}
+                                    disabled={!searchQuery.trim() || isAdding}
+                                    size="icon"
+                                    className="hover:bg-transparent hover:border-1 hover:border-black hover:text-black cursor-pointer "
+                                >
+                                    <Star className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     ))}
                 </div>
