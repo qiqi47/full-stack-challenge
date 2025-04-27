@@ -12,6 +12,7 @@ import { GridIcon, ListIcon } from 'lucide-react';
 import { Header } from '@/components/ui/header';
 import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service';
 import Watchlist from '@/components/watchlist';
+import StockCard from '@/components/stock-card';
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
@@ -139,7 +140,10 @@ export default function TradingDashboard() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <span>123</span>
+                                    <StockCard
+                                        symbol={selectedTicker || ''}
+                                        timeframe={timeframe}
+                                    />
                                 )}
                             </div>
                         </div>
