@@ -18,8 +18,9 @@ const chatbox = ({ messages, input, handleInputChange, handleSubmit }: any) => {
                     <div className="flex h-full items-center justify-center text-center p-4">
                         <div className="space-y-2">
                             <p className="text-sm text-muted-foreground">
-                                Ask me about stocks, market trends, or request information for
-                                any ticker.
+                                I can help you to check the stock price for you, and add it to
+                                your watch list. You can ask "check stock price for AMZN" or
+                                "add AMZN to watch list"
                             </p>
                         </div>
                     </div>
