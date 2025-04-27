@@ -128,12 +128,7 @@ export default function TradingDashboard() {
 
                 <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
                     <div className="flex flex-col h-full">
-                        <Chatbox
-                            messages={messages}
-                            input={input}
-                            handleInputChange={handleInputChange}
-                            handleSubmit={handleSubmit}
-                        />
+                        <Chatbox refetchWatchlist={refetchWatchlist} />
                     </div>
                 </div>
             </div>

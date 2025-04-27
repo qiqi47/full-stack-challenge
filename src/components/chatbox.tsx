@@ -1,105 +1,84 @@
-import { ScrollArea } from '@radix-ui/react-scroll-area';
-import React from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card } from '@/components/ui/card';
-import { Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+'use client';
 
-const chatbox = ({ messages, input, handleInputChange, handleSubmit }: any) => {
+import { useState } from 'react';
+import { sendChatMessage } from '@/api/chat/route'; // 记得路径对上！
+
+export default function Chatbox({ refetchWatchlist }: { refetchWatchlist?: () => void }) {
+    const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>(
+        [],
+    );
+    const [input, setInput] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+
+        const userMessage = { role: 'user' as const, content: input };
+        setMessages((prev) => [...prev, userMessage]);
+        setInput('');
+        setLoading(true);
+
+        try {
+            const response = await sendChatMessage(input);
+            const data = await response.json();
+            setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+
+            // Check for watchlist actions in the response metadata
+            if (
+                data.action &&
+                ['add_to_watchlist', 'remove_from_watchlist'].includes(data.action) &&
+                refetchWatchlist
+            ) {
+                refetchWatchlist();
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col h-full">
-            <div className="border-b p-4">
-                <h2 className="text-lg font-semibold">Trading Assistant</h2>
-            </div>
-
-            <ScrollArea className="flex-1 p-4">
-                {messages.length === 0 && (
-                    <div className="flex h-full items-center justify-center text-center p-4">
-                        <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">
-                                I can help you to check the stock price for you, and add it to
-                                your watch list. You can ask "check stock price for AMZN" or
-                                "add AMZN to watch list"
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {messages.map((message: any) => (
-                    <div key={message.id} className="mb-4">
-                        <div className="flex items-start gap-3">
-                            <Avatar
-                                className={message.role === 'user' ? 'bg-primary' : 'bg-muted'}
-                            >
-                                <AvatarFallback>
-                                    {message.role === 'user' ? 'U' : 'AI'}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="grid gap-1">
-                                <div className="font-semibold">
-                                    {message.role === 'user' ? 'You' : 'AI'}
-                                </div>
-                                <div className="text-sm">{message.content}</div>
-                            </div>
-                        </div>
-
-                        {message.toolInvocations?.map((toolInvocation: any) => {
-                            const { toolName, toolCallId, state } = toolInvocation;
-                            if (state === 'result' && toolName === 'getStockInfo') {
-                                const { result } = toolInvocation;
-                                return (
-                                    <div key={toolCallId} className="mt-4 ml-10">
-                                        <Card className="p-3">
-                                            <div className="text-sm">
-                                                <div className="font-semibold">
-                                                    {result.symbol}
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Price:</span>
-                                                    <span className="font-medium">
-                                                        ${result.price}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Change:</span>
-                                                    <span
-                                                        className={
-                                                            Number(result.change) >= 0
-                                                                ? 'text-green-600'
-                                                                : 'text-red-600'
-                                                        }
-                                                    >
-                                                        {Number(result.change) >= 0 ? '+' : ''}
-                                                        {result.change}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    </div>
-                                );
-                            }
-                            return null;
-                        })}
+        <div className="max-w-md mx-auto p-4 border rounded shadow space-y-4">
+            <div className="h-80 overflow-y-auto border p-2 rounded bg-gray-50">
+                {messages.map((msg, index) => (
+                    <div
+                        key={index}
+                        className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
+                    >
+                        <span
+                            className={`inline-block px-3 py-2 rounded ${
+                                msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-300'
+                            }`}
+                        >
+                            {msg.content}
+                        </span>
                     </div>
                 ))}
-            </ScrollArea>
-
-            <div className="border-t p-4">
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                    <Input
-                        value={input}
-                        onChange={handleInputChange}
-                        placeholder="Ask about stocks..."
-                        className="flex-1"
-                    />
-                    <Button type="submit" size="icon">
-                        <Send className="h-4 w-4" />
-                    </Button>
-                </form>
+                {loading && (
+                    <div className="text-left">
+                        <span className="inline-block px-3 py-2 rounded bg-gray-300">
+                            Thinking...
+                        </span>
+                    </div>
+                )}
             </div>
+
+            <form onSubmit={handleSubmit} className="flex space-x-2">
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    className="flex-1 border rounded px-3 py-2"
+                    placeholder="Ask about a stock..."
+                />
+                <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    disabled={loading}
+                >
+                    Send
+                </button>
+            </form>
         </div>
     );
-};
-
-export default chatbox;
+}

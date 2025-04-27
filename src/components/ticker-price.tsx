@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { generateMockStockData } from '@/lib/mock-data';
 import { fetchLatestStockBySymbol } from '@/api/stocks/market/service';
 import { TableCell } from './ui/table';
 
@@ -13,7 +12,6 @@ export function TickerPrice({ ticker, selected }: { ticker: string; selected: bo
         // Generate mock data for the ticker
         const latestStock = async () => {
             const response = await fetchLatestStockBySymbol(ticker);
-            console.log(response, 'price');
             if (response) {
                 try {
                     setPrice(response);
