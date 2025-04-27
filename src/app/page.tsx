@@ -14,6 +14,7 @@ import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service
 import Watchlist from '@/components/watchlist';
 import StockCard from '@/components/stock-card';
 import TradingViewChart from '@/components/TradingViewChart';
+import TickerSearch from '@/components/ticker-search';
 
 // Favorite tickers to display
 const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
@@ -100,6 +101,16 @@ export default function TradingDashboard() {
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-lg font-semibold">Favorites</h3>
                         </div>
+
+                        {watchlistId && (
+                            <div className="mb-3">
+                                <TickerSearch
+                                    watchlistId={watchlistId}
+                                    refetchWatchlist={refetchWatchlist}
+                                />
+                            </div>
+                        )}
+
                         <Watchlist
                             stocks={stockData?.assets}
                             selectedTicker={selectedTicker || ''}
