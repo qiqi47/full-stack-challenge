@@ -48,13 +48,13 @@ export const addSymbolToWatchlist = async (watchlistId: string, symbol: string) 
 //Remove a symbol from a watchlist
 export const removeSymbolFromWatchlist = async (watchlistId: string, symbol: string) => {
     try {
-        const url = `${watchlistEndpoints.watchlist}/${watchlistId}`;
-        const response = await alpacaTradeApi.delete(url, {
-            data: { symbol: symbol.toUpperCase() },
-        });
+        const url = `${watchlistEndpoints.watchlist}/${watchlistId}/${symbol.toUpperCase()}`;
+        const response = await alpacaTradeApi.delete(url);
         return response;
     } catch (error) {
         console.error('API error:', error);
         throw error;
     }
 };
+
+//Update a watchlist

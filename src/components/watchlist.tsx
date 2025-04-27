@@ -1,22 +1,34 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { TickerPrice } from './ticker-price';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Button } from './ui/button';
+import { Trash2 } from 'lucide-react';
+import { removeSymbolFromWatchlist } from '@/api/stocks/trading/service';
 
 const Watchlist = ({
     stocks,
     selectedTicker,
     handleTickerSelect,
+    watchlistId,
+    refetchWatchlist,
 }: {
     stocks: any[];
     selectedTicker: string;
     handleTickerSelect: (ticker: string) => void;
+    watchlistId: string;
+    refetchWatchlist: () => void;
 }) => {
     if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
         return (
             <div className="text-muted-foreground text-center py-4">No stocks in watchlist</div>
         );
     }
+
+    const handleRemoveStock = (symbol: string) => {
+        removeSymbolFromWatchlist(watchlistId, symbol);
+        refetchWatchlist();
+    };
 
     return (
         <div className="overflow-x-auto">
@@ -28,7 +40,7 @@ const Watchlist = ({
                         <TableHead>Exchange</TableHead>
                         <TableHead className="text-right">Status</TableHead>
                         <TableHead className="text-right">Price</TableHead>
-                        {/* <TableHead className="text-right">Change</TableHead> */}
+                        <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -69,6 +81,18 @@ const Watchlist = ({
                                 ticker={stock.symbol}
                                 selected={selectedTicker === stock.symbol}
                             />
+                            <TableCell className="text-right">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveStock(stock.symbol);
+                                    }}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

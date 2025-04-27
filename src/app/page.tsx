@@ -34,12 +34,17 @@ export default function TradingDashboard() {
         api: '/api/chat',
     });
 
-    const [selectedTicker, setSelectedTicker] = useState(FAVORITE_TICKERS[0]);
+    const [selectedTicker, setSelectedTicker] = useState();
     const [timeframe, setTimeframe] = useState('1d');
     const [stockData, setStockData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [usingMockData, setUsingMockData] = useState(false);
     const [watchlistId, setWatchlistId] = useState<string>('');
+    const [refetch, setRefetch] = useState(false);
+
+    const refetchWatchlist = () => {
+        setRefetch(!refetch);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,9 +53,10 @@ export default function TradingDashboard() {
             if (Array.isArray(response) && response.length > 0) {
                 setWatchlistId(response[0].id);
             }
+            setLoading(false);
         };
         fetchData();
-    }, []);
+    }, [refetch]);
 
     useEffect(() => {
         if (!watchlistId) return; // If no id, don't execute
@@ -61,19 +67,21 @@ export default function TradingDashboard() {
             if (response) {
                 setStockData(response);
             }
+            setLoading(false);
         };
         fetchData();
-    }, [watchlistId]); // Run when watchlistId changes
+    }, [watchlistId, refetch]); // Run when watchlistId or refetch changes
 
     // Handle ticker selection
     const handleTickerSelect = (ticker: string) => {
-        setSelectedTicker(ticker);
+        setSelectedTicker(ticker as any);
     };
 
     // Handle timeframe change
     const handleTimeframeChange = (value: string) => {
         setTimeframe(value);
     };
+
     return (
         <div className="flex flex-col h-screen max-h-screen bg-slate-50">
             <Header usingMockData={usingMockData} />
@@ -144,8 +152,10 @@ export default function TradingDashboard() {
                         </div>
                         <Watchlist
                             stocks={stockData?.assets}
-                            selectedTicker={selectedTicker}
+                            selectedTicker={selectedTicker || ''}
                             handleTickerSelect={handleTickerSelect}
+                            watchlistId={watchlistId}
+                            refetchWatchlist={refetchWatchlist}
                         />
                     </div>
                 </div>
