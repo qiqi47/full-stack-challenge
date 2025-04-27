@@ -107,6 +107,11 @@ export default function TradingDashboard() {
                                 <TickerSearch
                                     watchlistId={watchlistId}
                                     refetchWatchlist={refetchWatchlist}
+                                    currentSymbols={
+                                        stockData?.assets?.map(
+                                            (stock: { symbol: string }) => stock.symbol,
+                                        ) || []
+                                    }
                                 />
                             </div>
                         )}

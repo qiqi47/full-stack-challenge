@@ -9,9 +9,14 @@ import { STOCK_SUGGESTIONS } from '@/data/stock';
 interface TickerSearchProps {
     watchlistId: string;
     refetchWatchlist: () => void;
+    currentSymbols: string[];
 }
 
-const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchlist }) => {
+const TickerSearch: React.FC<TickerSearchProps> = ({
+    watchlistId,
+    refetchWatchlist,
+    currentSymbols,
+}) => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [suggestions, setSuggestions] = useState<typeof STOCK_SUGGESTIONS>([]);
     const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -27,7 +32,8 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchli
 
         const query = searchQuery.toUpperCase();
         const filtered = STOCK_SUGGESTIONS.filter(
-            (stock) => stock.symbol.includes(query) || stock.name.toUpperCase().includes(query),
+            (stock) =>
+                stock.ticker.includes(query) || stock.title.toUpperCase().includes(query),
         ).slice(0, 10); // Limit to 10 suggestions
 
         setSuggestions(filtered);
@@ -51,21 +57,22 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchli
         };
     }, []);
 
-    const handleSelectSuggestion = (symbol: string) => {
-        setSearchQuery(symbol);
+    const handleSelectSuggestion = (ticker: string) => {
+        setSearchQuery(ticker);
         setShowSuggestions(false);
     };
 
-    const handleAddToWatchlist = async () => {
-        if (!searchQuery.trim() || !watchlistId) return;
+    const handleAddToWatchlist = async (ticker: string) => {
+        if (!ticker || !watchlistId || currentSymbols.includes(ticker)) return;
 
         try {
             setIsAdding(true);
-            await addSymbolToWatchlist(watchlistId, searchQuery.trim());
+            await addSymbolToWatchlist(watchlistId, ticker);
             setSearchQuery('');
             refetchWatchlist();
+            setShowSuggestions(false); // Hide suggestions after adding
         } catch (error) {
-            console.error('Failed to add symbol to watchlist:', error);
+            console.error('Failed to add ticker to watchlist:', error);
         } finally {
             setIsAdding(false);
         }
@@ -96,24 +103,25 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ watchlistId, refetchWatchli
                 >
                     {suggestions.map((stock) => (
                         <div
-                            key={stock.symbol}
+                            key={stock.ticker}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
-                            onClick={() => handleSelectSuggestion(stock.symbol)}
+                            onClick={() => handleSelectSuggestion(stock.ticker)}
                         >
-                            <div className="flex flex-row items-center gap-2">
-                                <img src={stock.logoUrl} className="w-8 h-8 rounded-full" />
-                                <span className="font-medium">{stock.symbol}</span>
-                            </div>
+                            <span className="font-medium">{stock.ticker}</span>
                             <div className="flex flex-row gap-4 items-center ">
                                 <span className="text-gray-500 text-sm truncate ml-2">
-                                    {stock.name}
+                                    {stock.title}
                                 </span>
                                 <Button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleAddToWatchlist();
+                                        handleAddToWatchlist(stock.ticker);
                                     }}
-                                    disabled={!searchQuery.trim() || isAdding}
+                                    disabled={
+                                        !stock.ticker ||
+                                        isAdding ||
+                                        currentSymbols.includes(stock.ticker)
+                                    }
                                     size="icon"
                                     className="hover:bg-transparent hover:border-1 hover:border-black hover:text-black cursor-pointer "
                                 >
