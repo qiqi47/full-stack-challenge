@@ -33,14 +33,11 @@ export const fetchWatchlistById = async (watchlistId: string) => {
     }
 };
 
-// Create a new watchlist
-export const createWatchlist = async (name: string, symbols?: string[]) => {
+// Add a symbol to a watchlist
+export const addSymbolToWatchlist = async (watchlistId: string, symbol: string) => {
     try {
-        const payload = {
-            name,
-            symbols: symbols || [],
-        };
-        const response = await alpacaTradeApi.post(watchlistEndpoints.watchlist, payload);
+        const url = `${watchlistEndpoints.watchlist}/${watchlistId}`;
+        const response = await alpacaTradeApi.post(url, { symbol: symbol.toUpperCase() });
         return response;
     } catch (error) {
         console.error('API error:', error);
@@ -48,11 +45,13 @@ export const createWatchlist = async (name: string, symbols?: string[]) => {
     }
 };
 
-// Add a symbol to a watchlist
-export const addSymbolToWatchlist = async (watchlistId: string, symbol: string) => {
+//Remove a symbol from a watchlist
+export const removeSymbolFromWatchlist = async (watchlistId: string, symbol: string) => {
     try {
         const url = `${watchlistEndpoints.watchlist}/${watchlistId}`;
-        const response = await alpacaTradeApi.post(url, { symbol: symbol.toUpperCase() });
+        const response = await alpacaTradeApi.delete(url, {
+            data: { symbol: symbol.toUpperCase() },
+        });
         return response;
     } catch (error) {
         console.error('API error:', error);
