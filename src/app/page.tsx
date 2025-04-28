@@ -7,6 +7,7 @@ import Watchlist from '@/components/watchlist';
 import TradingViewChart from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
 import Chatbox from '@/components/chatbox';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TradingDashboard() {
     const [selectedTicker, setSelectedTicker] = useState();
@@ -61,9 +62,14 @@ export default function TradingDashboard() {
                     {/* Main Chart */}
                     <Card className="w-full mb-4">
                         <div className="h-[400px] w-full px-4">
-                            <TradingViewChart
-                                symbol={selectedTicker || stockData?.assets[0].symbol}
-                            />
+                            {loading ? (
+                                <Skeleton className="h-[400px] w-full" />
+                            ) : (
+                                <TradingViewChart
+                                    symbol={selectedTicker || stockData?.assets[0].symbol}
+                                    loading={loading}
+                                />
+                            )}
                         </div>
                     </Card>
 
@@ -88,13 +94,21 @@ export default function TradingDashboard() {
                             </div>
                         )}
 
-                        <Watchlist
-                            stocks={stockData?.assets}
-                            selectedTicker={selectedTicker || ''}
-                            handleTickerSelect={handleTickerSelect}
-                            watchlistId={watchlistId}
-                            refetchWatchlist={refetchWatchlist}
-                        />
+                        {loading ? (
+                            <div className="space-y-2">
+                                {[...Array(5)].map((_, index) => (
+                                    <Skeleton key={index} className="h-16 w-full" />
+                                ))}
+                            </div>
+                        ) : (
+                            <Watchlist
+                                stocks={stockData?.assets}
+                                selectedTicker={selectedTicker || ''}
+                                handleTickerSelect={handleTickerSelect}
+                                watchlistId={watchlistId}
+                                refetchWatchlist={refetchWatchlist}
+                            />
+                        )}
                     </div>
                 </div>
 
