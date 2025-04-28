@@ -11,10 +11,10 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setIsLoading(false);
-                router.push('/');
+                router.push('/home');
             } else {
                 setIsLoading(false);
-                router.push('/login');
+                router.push('/');
             }
             setIsLoading(false);
         });

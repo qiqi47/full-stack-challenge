@@ -1,160 +1,85 @@
 'use client';
-import { Card } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import { Header } from '@/components/ui/header';
-import Watchlist from '@/components/watchlist';
-import TradingViewChart from '@/components/TradingViewChart';
-import TickerSearch from '@/components/ticker-search';
-import Chatbox from '@/components/chatbox';
-import { Skeleton } from '@/components/ui/skeleton';
-import AuthRoute from './AuthRoute';
-export interface stock {
-    id: string;
-    cusip: string | null;
-    class: string;
-    exchange: string;
-    symbol: string;
-    name: string;
-    status: string;
-    tradable: boolean;
-    marginable: boolean;
-    maintenance_margin_requirement: number;
-    margin_requirement_long: string;
-    margin_requirement_short: string;
-    shortable: boolean;
-    easy_to_borrow: boolean;
-    fractionable: boolean;
-    attributes: string | null;
-}
 
-export default function TradingDashboard() {
-    const [selectedTicker, setSelectedTicker] = useState<string | undefined>('');
-    const [stockData, setStockData] = useState<stock[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [watchlistId, setWatchlistId] = useState<string>('');
-    const [refetch, setRefetch] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/firebase';
+const Login = () => {
+    const router = useRouter();
 
-    const refetchWatchlist = () => {
-        setRefetch(!refetch);
-    };
+    // Initialize Google Auth Provider
+    const googleProvider = new GoogleAuthProvider();
 
-    useEffect(() => {
-        const fetchWatchlistId = async () => {
-            setLoading(true);
-            setError(null);
-            setWatchlistId('');
-            try {
-                const res = await fetch('/api/watchlist');
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch watchlists: ${res.statusText}`);
-                }
-                const data = await res.json();
+    const [authing, setAuthing] = useState(false);
+    const [error, setError] = useState('');
 
-                if (data.success && data.watchlists && data.watchlists.length > 0) {
-                    setWatchlistId(data.watchlists[0].id);
-                } else if (!data.success) {
-                    throw new Error(data.message || 'Failed to get watchlists from API');
-                } else {
-                    console.log('No watchlists found for this account.');
-                }
-            } catch (err) {
-                console.error('Error fetching watchlist ID:', err, error);
-                setError('An unknown error occurred');
-            }
-        };
+    const signInWithGoogle = async () => {
+        setAuthing(true);
 
-        fetchWatchlistId();
-    }, [refetch]);
-
-    useEffect(() => {
-        if (!watchlistId) {
-            setStockData([]);
-            setLoading(false);
-            return;
-        }
-
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const res = await fetch(`/api/watchlist/${watchlistId}`);
-                const response = await res.json();
-
-                if (response.response.assets) {
-                    setStockData(response.response.assets);
-                } else {
-                    setStockData([]);
-                }
-            } catch (error) {
-                console.error('Failed to fetch watchlist details:', error);
-                setStockData([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [watchlistId, refetch]);
-
-    const handleTickerSelect = (ticker: string) => {
-        setSelectedTicker(ticker);
+        signInWithPopup(auth, googleProvider)
+            .then((res) => {
+                console.log(res.user.uid);
+                router.push('/home');
+            })
+            .catch((err) => {
+                console.log(err);
+                setError(err.message);
+                setAuthing(false);
+            });
     };
 
     return (
-        <AuthRoute>
-            <div className="flex flex-col h-screen bg-gray-50">
-                <Header />
-                <div className="flex flex-1 overflow-hidden">
-                    <div className="flex-1 p-6 overflow-y-auto">
-                        <Card className="p-4 mb-4 h-[400px]">
-                            <TradingViewChart
-                                symbol={selectedTicker || stockData?.[0]?.symbol}
-                            />
-                        </Card>
+        <div className="w-screen h-screen flex">
+            {/* Left half of the screen - background styling */}
+            <div className="w-1/2 h-full flex flex-col bg-[#282c34] items-center justify-center"></div>
 
-                        <div className="mb-4">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3 className="text-lg font-semibold">Favorites</h3>
-                            </div>
-
-                            {watchlistId && (
-                                <div className="mb-3">
-                                    <TickerSearch
-                                        watchlistId={watchlistId}
-                                        refetchWatchlist={refetchWatchlist}
-                                        handleTickerSelect={handleTickerSelect}
-                                        currentSymbols={stockData.map((stock) => stock.symbol)}
-                                    />
-                                </div>
-                            )}
-
-                            {loading ? (
-                                <div className="space-y-2">
-                                    {[...Array(5)].map((_, index) => (
-                                        <Skeleton key={index} className="h-16 w-full" />
-                                    ))}
-                                </div>
-                            ) : (
-                                <Watchlist
-                                    stocks={stockData}
-                                    selectedTicker={selectedTicker || ''}
-                                    handleTickerSelect={handleTickerSelect}
-                                    watchlistId={watchlistId}
-                                    refetchWatchlist={refetchWatchlist}
-                                />
-                            )}
-                        </div>
+            {/* Right half of the screen - login form */}
+            <div className="w-1/2 h-full bg-[#1a1a1a] flex flex-col p-20 justify-center">
+                <div className="w-full flex flex-col max-w-[450px] mx-auto">
+                    {/* Header section with title and welcome message */}
+                    <div className="w-full flex flex-col mb-10 text-white">
+                        <h3 className="text-4xl font-bold mb-2">Login</h3>
+                        <p className="text-lg mb-4">Welcome! Please enter your details.</p>
                     </div>
-
-                    <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
-                        <div className="flex flex-col h-full">
-                            <Chatbox
-                                refetchWatchlist={refetchWatchlist}
-                                handleTickerSelect={handleTickerSelect}
-                            />
-                        </div>
-                    </div>
+                    {/* Display error message if there is one */}
+                    {error && <div className="text-red-500 mb-4">{error}</div>}
+                    {/* Button to log in with Google */}
+                    <button
+                        className="w-full bg-white text-black font-semibold rounded-md p-4 text-center flex items-center justify-center cursor-pointer mt-7 gap-4"
+                        onClick={signInWithGoogle}
+                        disabled={authing}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            x="0px"
+                            y="0px"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 48 48"
+                        >
+                            <path
+                                fill="#fbc02d"
+                                d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12	s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20	s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+                            ></path>
+                            <path
+                                fill="#e53935"
+                                d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039	l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+                            ></path>
+                            <path
+                                fill="#4caf50"
+                                d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36	c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+                            ></path>
+                            <path
+                                fill="#1565c0"
+                                d="M43.611,20.083L43.595,20L42,20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571	c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+                            ></path>
+                        </svg>
+                        Log In With Google
+                    </button>
                 </div>
             </div>
-        </AuthRoute>
+        </div>
     );
-}
+};
+
+export default Login;

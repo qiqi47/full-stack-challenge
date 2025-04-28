@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import type { stock } from '@/app/page';
+import type { stock } from '@/app/home/page';
 
 const Watchlist = ({
     stocks,
