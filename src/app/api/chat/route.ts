@@ -2,9 +2,17 @@
 
 'use server';
 
+import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export async function sendChatMessage(message: string) {
+export async function POST(request: Request) {
+    const { message } = await request.json();
+
+    // Add a check to ensure message is a string
+    if (typeof message !== 'string') {
+        return NextResponse.json({ error: 'Invalid message format' }, { status: 400 });
+    }
+
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -65,7 +73,6 @@ export async function sendChatMessage(message: string) {
     });
 
     const data = await response.json();
-
     const choice = data.choices[0];
 
     if (choice.finish_reason === 'function_call') {
@@ -78,36 +85,32 @@ export async function sendChatMessage(message: string) {
         let symbol = null;
 
         if (name === 'get_stock_price') {
-            const stockPrice = await fetch(
-                `/api/market?symbol=${parsedArgs.symbol.toUpperCase()}`,
-            )
-                .then((res) => res.json())
-                .catch((err) => {
-                    console.error(err);
-                    return { isValid: false };
-                });
-
-            if (stockPrice.isValid) {
-                result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
-                    'bar' in stockPrice && stockPrice.bar && 'c' in stockPrice.bar
-                        ? stockPrice.bar.c
-                        : 0
-                }`;
-                symbol = parsedArgs.symbol.toUpperCase();
-                action = 'get_stock_price';
-            } else {
-                result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
+            const response = await fetch(
+                `https://data.alpaca.markets/v2/stocks/${parsedArgs.symbol}/bars/latest`,
+            );
+            const res = await response.json();
+            console.log(res, 'res222');
+            if (res) {
+                try {
+                    result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
+                        'bar' in res && res.bar && 'c' in res.bar ? res.bar.c : 0
+                    }`;
+                    symbol = parsedArgs.symbol.toUpperCase();
+                    action = 'get_stock_price';
+                } catch (error) {
+                    result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
+                }
             }
         } else if (name === 'add_to_watchlist') {
             const stockCheck = await fetch(
-                `/api/market?symbol=${parsedArgs.symbol.toUpperCase()}`,
+                `https://data.alpaca.markets/v2/stocks/${parsedArgs.symbol}/bars/latest`,
             ).then((res) => res.json());
 
             if (!stockCheck.isValid) {
                 result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             } else {
                 const addResult = await fetch(
-                    `/api/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+                    `https://paper-api.alpaca.markets/v2/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
                 ).then((res) => res.json());
 
                 if (addResult.success) {
@@ -122,7 +125,14 @@ export async function sendChatMessage(message: string) {
             }
         } else if (name === 'remove_from_watchlist') {
             const removeResult = await fetch(
-                `/api/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+                `https://paper-api.alpaca.markets/v2/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'APCA-API-KEY-ID': process.env.ALPACA_API_KEY || '',
+                        'APCA-API-SECRET-KEY': process.env.ALPACA_API_SECRET || '',
+                    },
+                },
             ).then((res) => res.json());
 
             if (removeResult.success) {

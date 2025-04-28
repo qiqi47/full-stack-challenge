@@ -57,75 +57,68 @@ export default function Chatbox({
     };
 
     return (
-        <Card className="w-full flex flex-col max-w-md mx-auto m-4 border-0 shadow-lg h-screen">
+        <Card className="flex flex-col h-full m-4 border-0 shadow-lg ">
             <CardHeader className="pb-2">
                 <CardTitle className="text-xl font-semibold">Stock Assistant</CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow pb-0">
-                <ScrollArea className="h-4/5 pr-4">
-                    {messages.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
-                            <Info className="h-12 w-12 mb-4 text-primary/40" />
-                            <p className="mb-3 font-medium">Welcome to your stock assistant!</p>
-                            <p className="text-sm mb-3">You can ask about:</p>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <ChevronRight className="h-4 w-4 text-primary" />
-                                    <span>
-                                        Stock prices (e.g., "What's the price of AAPL?")
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Plus className="h-4 w-4 text-primary" />
-                                    <span>
-                                        Add stocks to watchlist (e.g., "Add TSLA to my
-                                        watchlist")
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Minus className="h-4 w-4 text-primary" />
-                                    <span>
-                                        Remove stocks (e.g., "Remove MSFT from my list")
-                                    </span>
-                                </div>
+            <CardContent className="flex-grow pb-0 overflow-hidden overflow-y-auto">
+                {messages.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
+                        <Info className="h-12 w-12 mb-4 text-primary/40" />
+                        <p className="mb-3 font-medium">Welcome to your stock assistant!</p>
+                        <p className="text-sm mb-3">You can ask about:</p>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                                <ChevronRight className="h-4 w-4 text-primary" />
+                                <span>Stock prices (e.g., "What's the price of AAPL?")</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Plus className="h-4 w-4 text-primary" />
+                                <span>
+                                    Add stocks to watchlist (e.g., "Add TSLA to my watchlist")
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Minus className="h-4 w-4 text-primary" />
+                                <span>Remove stocks (e.g., "Remove MSFT from my list")</span>
                             </div>
                         </div>
-                    ) : (
-                        <div className="space-y-4 pt-4">
-                            {messages.map((msg, index) => (
+                    </div>
+                ) : (
+                    <div className="space-y-4 pt-4">
+                        {messages.map((msg, index) => (
+                            <div
+                                key={index}
+                                className={cn(
+                                    'flex',
+                                    msg.role === 'user' ? 'justify-end' : 'justify-start',
+                                )}
+                            >
                                 <div
-                                    key={index}
                                     className={cn(
-                                        'flex',
-                                        msg.role === 'user' ? 'justify-end' : 'justify-start',
+                                        'max-w-[80%] px-4 py-2 rounded-lg',
+                                        msg.role === 'user'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted',
                                     )}
                                 >
-                                    <div
-                                        className={cn(
-                                            'max-w-[80%] px-4 py-2 rounded-lg',
-                                            msg.role === 'user'
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-muted',
-                                        )}
-                                    >
-                                        {msg.content}
-                                    </div>
+                                    {msg.content}
                                 </div>
-                            ))}
-                            {loading && (
-                                <div className="flex justify-start">
-                                    <div className="max-w-[80%] px-4 py-2 rounded-lg bg-muted flex items-center gap-2">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span>Thinking...</span>
-                                    </div>
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className="flex justify-start">
+                                <div className="max-w-[80%] px-4 py-2 rounded-lg bg-muted flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Thinking...</span>
                                 </div>
-                            )}
-                        </div>
-                    )}
-                </ScrollArea>
+                            </div>
+                        )}
+                    </div>
+                )}
             </CardContent>
-            <CardFooter className="pt-4">
-                <form onSubmit={handleSubmit} className="flex w-full gap-2">
+            <CardFooter className="border-t flex items-center justify-center">
+                <form onSubmit={handleSubmit} className="flex gap-4 w-full pb-4">
                     <Input
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
