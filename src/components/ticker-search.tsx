@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Search, Plus, Star, Loader2 } from 'lucide-react';
+import { Search, Star, Loader2 } from 'lucide-react';
 import { STOCK_SUGGESTIONS } from '@/data/stock';
 import { toast, ToastContainer } from 'react-toastify';
 

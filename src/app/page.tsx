@@ -125,13 +125,13 @@ export default function TradingDashboard() {
                                 </div>
                             )}
 
-                            {loading && !stockData && watchlistId ? (
+                            {loading ? (
                                 <div className="space-y-2">
                                     {[...Array(5)].map((_, index) => (
                                         <Skeleton key={index} className="h-16 w-full" />
                                     ))}
                                 </div>
-                            ) : watchlistId ? (
+                            ) : (
                                 <Watchlist
                                     stocks={stockData}
                                     selectedTicker={selectedTicker || ''}
@@ -139,16 +139,6 @@ export default function TradingDashboard() {
                                     watchlistId={watchlistId}
                                     refetchWatchlist={refetchWatchlist}
                                 />
-                            ) : (
-                                !loading && (
-                                    <div className="text-muted-foreground text-center py-4">
-                                        {error ? (
-                                            <span className="text-red-500">Error: {error}</span>
-                                        ) : (
-                                            'No watchlist found or selected.'
-                                        )}
-                                    </div>
-                                )
                             )}
                         </div>
                     </div>

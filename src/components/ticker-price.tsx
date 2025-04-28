@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TableCell } from './ui/table';
-
-export function TickerPrice({ ticker, selected }: { ticker: string; selected: boolean }) {
-    const [price, setPrice] = useState<any>(null);
+import { Loader2 } from 'lucide-react';
+export function TickerPrice({ ticker }: { ticker: string; selected: boolean }) {
+    const [price, setPrice] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,9 +27,15 @@ export function TickerPrice({ ticker, selected }: { ticker: string; selected: bo
 
     return (
         <>
-            <TableCell className="px-4 py-3 text-right">
-                {price ? `$${price}` : 'Loading...'}
-            </TableCell>
+            {loading ? (
+                <TableCell className="px-4 py-3 text-right">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                </TableCell>
+            ) : (
+                <TableCell className="px-4 py-3 text-right">
+                    {price ? `$${price}` : 'Loading...'}
+                </TableCell>
+            )}
         </>
     );
 }

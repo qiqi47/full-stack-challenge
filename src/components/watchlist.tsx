@@ -6,7 +6,24 @@ import { Button } from './ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { ScrollArea } from './ui/scroll-area';
+interface stock {
+    id: string;
+    cusip: string | null;
+    class: string;
+    exchange: string;
+    symbol: string;
+    name: string;
+    status: string;
+    tradable: boolean;
+    marginable: boolean;
+    maintenance_margin_requirement: number;
+    margin_requirement_long: string;
+    margin_requirement_short: string;
+    shortable: boolean;
+    easy_to_borrow: boolean;
+    fractionable: boolean;
+    attributes: string | null;
+}
 
 const Watchlist = ({
     stocks,
@@ -15,7 +32,7 @@ const Watchlist = ({
     watchlistId,
     refetchWatchlist,
 }: {
-    stocks: any[];
+    stocks: stock[];
     selectedTicker: string;
     handleTickerSelect: (ticker: string) => void;
     watchlistId: string;
