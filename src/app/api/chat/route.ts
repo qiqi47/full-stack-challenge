@@ -87,9 +87,16 @@ export async function POST(request: Request) {
         if (name === 'get_stock_price') {
             const response = await fetch(
                 `https://data.alpaca.markets/v2/stocks/${parsedArgs.symbol}/bars/latest`,
+                {
+                    headers: {
+                        'APCA-API-KEY-ID': process.env.ALPACA_API_KEY || '',
+                        'APCA-API-SECRET-KEY': process.env.ALPACA_API_SECRET || '',
+                        Accept: 'application/json',
+                    },
+                },
             );
+
             const res = await response.json();
-            console.log(res, 'res222');
             if (res) {
                 try {
                     result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
@@ -104,13 +111,27 @@ export async function POST(request: Request) {
         } else if (name === 'add_to_watchlist') {
             const stockCheck = await fetch(
                 `https://data.alpaca.markets/v2/stocks/${parsedArgs.symbol}/bars/latest`,
+                {
+                    headers: {
+                        'APCA-API-KEY-ID': process.env.ALPACA_API_KEY || '',
+                        'APCA-API-SECRET-KEY': process.env.ALPACA_API_SECRET || '',
+                        Accept: 'application/json',
+                    },
+                },
             ).then((res) => res.json());
-
             if (!stockCheck.isValid) {
                 result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             } else {
                 const addResult = await fetch(
                     `https://paper-api.alpaca.markets/v2/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'APCA-API-KEY-ID': process.env.ALPACA_API_KEY || '',
+                            'APCA-API-SECRET-KEY': process.env.ALPACA_API_SECRET || '',
+                            Accept: 'application/json',
+                        },
+                    },
                 ).then((res) => res.json());
 
                 if (addResult.success) {

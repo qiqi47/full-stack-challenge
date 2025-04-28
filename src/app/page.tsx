@@ -92,14 +92,14 @@ export default function TradingDashboard() {
     const handleTickerSelect = (ticker: string) => {
         setSelectedTicker(ticker);
     };
-    console.log(stockData?.[0]?.symbol, 'stockData');
+
     return (
         <AuthRoute>
             <div className="flex flex-col h-screen bg-gray-50">
                 <Header usingMockData={usingMockData} />
                 <div className="flex flex-1 overflow-hidden">
                     <div className="flex-1 p-6 overflow-y-auto">
-                        <Card className="mb-6 h-[400px]">
+                        <Card className="p-4 mb-4 h-[400px]">
                             <TradingViewChart
                                 symbol={selectedTicker || stockData?.[0]?.symbol}
                             />

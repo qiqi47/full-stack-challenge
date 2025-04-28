@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
+import { ScrollArea } from './ui/scroll-area';
 
 const Watchlist = ({
     stocks,
