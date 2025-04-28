@@ -96,7 +96,7 @@ export async function POST(request: Request) {
             );
 
             const res = await response.json();
-            if (res) {
+            if (res && !res.message && res.symbol) {
                 try {
                     result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
                         'bar' in res && res.bar && 'c' in res.bar ? res.bar.c : 0
@@ -107,6 +107,8 @@ export async function POST(request: Request) {
                     console.log(error, 'error');
                     result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
                 }
+            } else {
+                result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             }
         } else if (name === 'add_to_watchlist') {
             const response = await fetch(
@@ -121,7 +123,7 @@ export async function POST(request: Request) {
             );
 
             const res = await response.json();
-            if (!res) {
+            if (!res || res.message || !res.symbol) {
                 result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             } else {
                 const addResult = await fetch(
