@@ -8,6 +8,7 @@ import TradingViewChart from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
 import Chatbox from '@/components/chatbox';
 import { Skeleton } from '@/components/ui/skeleton';
+import AuthRoute from './AuthRoute';
 
 export default function TradingDashboard() {
     const [selectedTicker, setSelectedTicker] = useState();
@@ -53,81 +54,83 @@ export default function TradingDashboard() {
     };
 
     return (
-        <div className="flex flex-col h-screen max-h-screen bg-slate-50">
-            <Header usingMockData={usingMockData} />
-            {/* Main content area (70% width) */}
+        <AuthRoute>
+            <div className="flex flex-col h-screen max-h-screen bg-slate-50">
+                <Header usingMockData={usingMockData} />
+                {/* Main content area (70% width) */}
 
-            <div className="flex flex-1 overflow-hidden">
-                <div className="w-full lg:w-[70%] p-4 overflow-auto">
-                    {/* Main Chart */}
-                    <Card className="w-full mb-4">
-                        <div className="h-[400px] w-full px-4">
+                <div className="flex flex-1 overflow-hidden">
+                    <div className="w-full lg:w-[70%] p-4 overflow-auto">
+                        {/* Main Chart */}
+                        <Card className="w-full mb-4">
+                            <div className="h-[400px] w-full px-4">
+                                {loading ? (
+                                    <Skeleton className="h-[400px] w-full" />
+                                ) : (
+                                    <TradingViewChart
+                                        symbol={selectedTicker || stockData?.assets[0].symbol}
+                                        loading={loading}
+                                    />
+                                )}
+                            </div>
+                        </Card>
+
+                        {/* Favorites List */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-lg font-semibold">Favorites</h3>
+                            </div>
+
+                            {watchlistId && (
+                                <div className="mb-3">
+                                    <TickerSearch
+                                        watchlistId={watchlistId}
+                                        refetchWatchlist={refetchWatchlist}
+                                        handleTickerSelect={handleTickerSelect}
+                                        currentSymbols={
+                                            stockData?.assets?.map(
+                                                (stock: { symbol: string }) => stock.symbol,
+                                            ) || []
+                                        }
+                                    />
+                                </div>
+                            )}
+
                             {loading ? (
-                                <Skeleton className="h-[400px] w-full" />
+                                <div className="space-y-2">
+                                    {[...Array(5)].map((_, index) => (
+                                        <Skeleton key={index} className="h-16 w-full" />
+                                    ))}
+                                </div>
                             ) : (
-                                <TradingViewChart
-                                    symbol={selectedTicker || stockData?.assets[0].symbol}
-                                    loading={loading}
+                                <Watchlist
+                                    stocks={stockData?.assets}
+                                    selectedTicker={selectedTicker || ''}
+                                    handleTickerSelect={handleTickerSelect}
+                                    watchlistId={watchlistId}
+                                    refetchWatchlist={refetchWatchlist}
                                 />
                             )}
                         </div>
-                    </Card>
+                    </div>
 
-                    {/* Favorites List */}
-                    <div className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-lg font-semibold">Favorites</h3>
-                        </div>
-
-                        {watchlistId && (
-                            <div className="mb-3">
-                                <TickerSearch
-                                    watchlistId={watchlistId}
-                                    refetchWatchlist={refetchWatchlist}
-                                    handleTickerSelect={handleTickerSelect}
-                                    currentSymbols={
-                                        stockData?.assets?.map(
-                                            (stock: { symbol: string }) => stock.symbol,
-                                        ) || []
-                                    }
-                                />
-                            </div>
-                        )}
-
-                        {loading ? (
-                            <div className="space-y-2">
-                                {[...Array(5)].map((_, index) => (
-                                    <Skeleton key={index} className="h-16 w-full" />
-                                ))}
-                            </div>
-                        ) : (
-                            <Watchlist
-                                stocks={stockData?.assets}
-                                selectedTicker={selectedTicker || ''}
-                                handleTickerSelect={handleTickerSelect}
-                                watchlistId={watchlistId}
+                    <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
+                        <div className="flex flex-col h-full">
+                            <Chatbox
                                 refetchWatchlist={refetchWatchlist}
+                                handleTickerSelect={handleTickerSelect}
                             />
-                        )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="hidden lg:block w-[30%] border-l bg-white overflow-hidden">
-                    <div className="flex flex-col h-full">
-                        <Chatbox
-                            refetchWatchlist={refetchWatchlist}
-                            handleTickerSelect={handleTickerSelect}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile chat button (visible on small screens) */}
-            {/* <div className="lg:hidden fixed bottom-4 right-4">
+                {/* Mobile chat button (visible on small screens) */}
+                {/* <div className="lg:hidden fixed bottom-4 right-4">
                 <Button className="rounded-full h-12 w-12 shadow-lg">
                     <Send className="h-5 w-5" />
                 </Button>
             </div> */}
-        </div>
+            </div>
+        </AuthRoute>
     );
 }
