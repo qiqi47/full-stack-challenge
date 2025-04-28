@@ -1,52 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trading AI Dashboard
+
+## Overview
+
+Trading AI Dashboard is a modern full-stack application that combines real-time stock data, watchlist management, and AI assistance for trading and investment research.
+
+## Demo & Live Website
+
+-   **Demo Video**: [Watch Demo](https://www.loom.com/share/a66d125818a949febf268c4b88b91b20?sid=0a4c86fe-79d1-4dae-bcea-bb32a8f17cbf)
+-   **Live Website**: [Trading AI Dashboard](https://trading-ai-wheat.vercel.app/)
+
+## Features
+
+-   **Interactive Stock Charts**: Real-time TradingView chart integration for comprehensive stock analysis
+-   **Personalized Watchlist**: Add, remove, and track your favorite stocks
+-   **AI Stock Assistant**: Chat with an AI assistant to:
+    -   Check current stock prices
+    -   Add stocks to your watchlist
+    -   Remove stocks from your watchlist
+    -   Get information about stocks
+-   **User Authentication**: Secure login system powered by Firebase
+
+## Tech Stack
+
+-   **Frontend**: Next.js 15, React 19, TailwindCSS, Shadcn UI components
+-   **Charts**: TradingView integration, Recharts
+-   **Backend**: Next.js API routes with server actions
+-   **Authentication**: Firebase Authentication
+-   **External APIs**: Alpaca Markets API for stock data
+-   **AI Integration**: OpenAI GPT-3.5 for natural language stock assistant
 
 ## Getting Started
 
-First, set up your environment:
+### Prerequisites
 
-1. Get an API key from [Alpha Vantage](https://www.alphavantage.co/support/#api-key) (free tier available)
-2. Create a `.env.local` file in the root directory with your API key:
-```
-ALPHA_VANTAGE_API_KEY=your_api_key_here
-```
+-   Node.js 18+
+-   npm or yarn
+-   Alpaca Markets API credentials
+-   OpenAI API key
+-   Firebase project
 
-Then, run the development server:
+### Installation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone the repository
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    ```
+    git clone <repository-url>
+    cd trading-ai-dashboard
+    ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Install dependencies
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    ```
+    npm install
+    ```
 
-## Real-time Stock Data
+3. Set up environment variables
+   Create a `.env` file with the following:
 
-This application uses the Alpha Vantage API to fetch real-time stock data. The free tier has limitations:
-- 5 API requests per minute
-- 500 requests per day
+    ```
+    ALPACA_API_KEY=your_alpaca_key
+    ALPACA_API_SECRET=your_alpaca_secret
+    OPENAI_API_KEY=your_openai_key
+    NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
+    NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
+    ```
 
-If you see errors or missing data, you may have exceeded these limits.
+4. Run the development server
 
-## Learn More
+    ```
+    npm run dev
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+MIT
 
-## Deploy on Vercel
+## Acknowledgements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-   [Alpaca Markets](https://alpaca.markets/) for stock data API
+-   [TradingView](https://www.tradingview.com/) for charting capabilities
+-   [OpenAI](https://openai.com/) for AI assistant capabilities
