@@ -68,19 +68,17 @@ export default function Chatbox({
                         <p className="mb-3 font-medium">Welcome to your stock assistant!</p>
                         <p className="text-sm mb-3">You can ask about:</p>
                         <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 ">
                                 <ChevronRight className="h-4 w-4 text-primary" />
-                                <span>Stock prices (e.g., "What's the price of AAPL?")</span>
+                                <span>"What's the price of AAPL?"</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Plus className="h-4 w-4 text-primary" />
-                                <span>
-                                    Add stocks to watchlist (e.g., "Add TSLA to my watchlist")
-                                </span>
+                                <span>"Add TSLA to my watchlist"</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Minus className="h-4 w-4 text-primary" />
-                                <span>Remove stocks (e.g., "Remove MSFT from my list")</span>
+                                <span>"Remove MSFT from my list"</span>
                             </div>
                         </div>
                     </div>
