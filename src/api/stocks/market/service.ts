@@ -1,6 +1,6 @@
 import { alpacaMarketApi } from '../axiosConfig';
 import { marketEndpoints } from './constant';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 
 // Mock data for fallback
 const mockStockData = {
@@ -18,23 +18,6 @@ const mockStockData = {
         },
     ],
 };
-
-interface BarData {
-    c: number; // close
-    h: number; // high
-    l: number; // low
-    n: number; // number of trades
-    o: number; // open
-    t: string; // timestamp
-    v: number; // volume
-    vw: number; // volume weighted average price
-}
-
-interface StockData {
-    bars: BarData[];
-    next_page_token: string | null;
-    symbol: string;
-}
 
 // Fetch stock by symbol
 export const fetchLatestStockBySymbol = async (symbol: string) => {
@@ -67,7 +50,7 @@ export const fetchLatestStockBySymbol = async (symbol: string) => {
         return {
             ...mockStockData,
             symbol: symbol.toUpperCase(),
-            isValid: process.env.NODE_ENV === 'development', // Only mark as valid in development
+            isValid: process.env.NODE_ENV === 'development',
         };
     }
 };

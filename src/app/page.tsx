@@ -1,44 +1,15 @@
 'use client';
-import { useChat } from 'ai/react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { GridIcon, ListIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/ui/header';
 import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service';
 import Watchlist from '@/components/watchlist';
-import StockCard from '@/components/stock-card';
 import TradingViewChart from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
 import Chatbox from '@/components/chatbox';
-// Favorite tickers to display
-const FAVORITE_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'ORCL', 'WMT', 'NFLX'];
-
-// Time selection options
-const TIME_OPTIONS = [
-    { value: '5m', label: '5m' },
-    { value: '15m', label: '15m' },
-    { value: '30m', label: '30m' },
-    { value: '1h', label: '1h' },
-    { value: '4h', label: '4h' },
-    { value: '1d', label: '1D' },
-    { value: '1m', label: '1M' },
-    { value: '3m', label: '3M' },
-    { value: '1y', label: '1Y' },
-];
 
 export default function TradingDashboard() {
-    const { messages, input, handleInputChange, handleSubmit } = useChat({
-        api: '/api/chat',
-    });
-
     const [selectedTicker, setSelectedTicker] = useState();
-    const [timeframe, setTimeframe] = useState('1d');
     const [stockData, setStockData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [usingMockData, setUsingMockData] = useState(false);
@@ -89,7 +60,7 @@ export default function TradingDashboard() {
                 <div className="w-full lg:w-[70%] p-4 overflow-auto">
                     {/* Main Chart */}
                     <Card className="w-full mb-4">
-                        <div className="h-[400px] w-full">
+                        <div className="h-[400px] w-full px-4">
                             <TradingViewChart
                                 symbol={selectedTicker || stockData?.assets[0].symbol}
                             />

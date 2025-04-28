@@ -1,15 +1,6 @@
 import { alpacaTradeApi } from '../axiosConfig';
 import { watchlistEndpoints } from './constant';
 
-// Mock data for fallback
-const mockWatchlistData = {
-    id: 'bbb7464e-1d3c-4ea0-b65f-1e357357b3e3',
-    account_id: '688299ae-fe4a-4943-bfe4-49991ce060f2',
-    created_at: '2025-04-26T22:14:00.768563Z',
-    updated_at: '2025-04-26T22:14:00.768563Z',
-    name: 'watchlist',
-};
-
 // Fetch all watchlists
 export const fetchWatchlist = async () => {
     try {

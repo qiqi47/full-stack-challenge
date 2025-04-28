@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { sendChatMessage } from '@/api/chat/route';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Send, Loader2, Info, Plus, Minus, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Chatbox({
     refetchWatchlist,
@@ -49,69 +55,91 @@ export default function Chatbox({
     };
 
     return (
-        <div className="max-w-md mx-auto p-4 m-4 border rounded shadow flex flex-col w-full h-screen">
-            <div className="flex-grow overflow-y-auto border p-2 rounded bg-gray-50 mb-4">
-                {messages.length === 0 ? (
-                    <div className="text-center text-gray-500 p-4 h-full flex flex-col justify-center">
-                        <p className="mb-2 font-medium">Welcome to your stock assistant!</p>
-                        <p className="text-sm">You can ask about:</p>
-                        <ul className="text-sm mt-2">
-                            <li>• Stock prices (e.g., "What's the price of AAPL?")</li>
-                            <li>
-                                • Add stocks to your watchlist (e.g., "Add TSLA to my
-                                watchlist")
-                            </li>
-                            <li>
-                                • Remove stocks from your watchlist (e.g., "Remove MSFT from my
-                                list")
-                            </li>
-                        </ul>
-                    </div>
-                ) : (
-                    messages.map((msg, index) => (
-                        <div
-                            key={index}
-                            className={`mb-2 ${
-                                msg.role === 'user' ? 'text-right' : 'text-left'
-                            }`}
-                        >
-                            <span
-                                className={`inline-block px-3 py-2 rounded ${
-                                    msg.role === 'user'
-                                        ? 'bg-blue-500 text-white'
-                                        : 'bg-gray-300'
-                                }`}
-                            >
-                                {msg.content}
-                            </span>
+        <Card className="w-full flex flex-col max-w-md mx-auto m-4 border-0 shadow-lg h-screen">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-semibold">Stock Assistant</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow pb-0">
+                <ScrollArea className="h-4/5 pr-4">
+                    {messages.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
+                            <Info className="h-12 w-12 mb-4 text-primary/40" />
+                            <p className="mb-3 font-medium">Welcome to your stock assistant!</p>
+                            <p className="text-sm mb-3">You can ask about:</p>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <ChevronRight className="h-4 w-4 text-primary" />
+                                    <span>
+                                        Stock prices (e.g., "What's the price of AAPL?")
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Plus className="h-4 w-4 text-primary" />
+                                    <span>
+                                        Add stocks to watchlist (e.g., "Add TSLA to my
+                                        watchlist")
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Minus className="h-4 w-4 text-primary" />
+                                    <span>
+                                        Remove stocks (e.g., "Remove MSFT from my list")
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    ))
-                )}
-                {loading && (
-                    <div className="text-left">
-                        <span className="inline-block px-3 py-2 rounded bg-gray-300">
-                            Thinking...
-                        </span>
-                    </div>
-                )}
-            </div>
-
-            <form onSubmit={handleSubmit} className="flex space-x-2 mt-auto">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="flex-1 border rounded px-3 py-2"
-                    placeholder="Ask about a stock..."
-                />
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    disabled={loading}
-                >
-                    Send
-                </button>
-            </form>
-        </div>
+                    ) : (
+                        <div className="space-y-4 pt-4">
+                            {messages.map((msg, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        'flex',
+                                        msg.role === 'user' ? 'justify-end' : 'justify-start',
+                                    )}
+                                >
+                                    <div
+                                        className={cn(
+                                            'max-w-[80%] px-4 py-2 rounded-lg',
+                                            msg.role === 'user'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-muted',
+                                        )}
+                                    >
+                                        {msg.content}
+                                    </div>
+                                </div>
+                            ))}
+                            {loading && (
+                                <div className="flex justify-start">
+                                    <div className="max-w-[80%] px-4 py-2 rounded-lg bg-muted flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>Thinking...</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </ScrollArea>
+            </CardContent>
+            <CardFooter className="pt-4">
+                <form onSubmit={handleSubmit} className="flex w-full gap-2">
+                    <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Ask about a stock..."
+                        className="flex-1"
+                        disabled={loading}
+                    />
+                    <Button type="submit" disabled={loading} size="icon">
+                        {loading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
+                    </Button>
+                </form>
+            </CardFooter>
+        </Card>
     );
 }
