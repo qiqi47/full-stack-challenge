@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 
 export async function DELETE(
     request: Request, // Standard first arg
-    { params }: { params: { id: string; symbol: string } },
+    { params }: { params: Promise<{ id: string; symbol: string }> },
 ) {
-    const watchlistId = params.id;
-    const symbolToRemove = params.symbol?.toUpperCase();
+    const { id, symbol } = await params;
+    const watchlistId = id;
+    const symbolToRemove = symbol?.toUpperCase();
 
     if (!watchlistId) {
         return NextResponse.json({ message: 'Watchlist ID is required' }, { status: 400 });
