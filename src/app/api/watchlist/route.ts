@@ -24,13 +24,8 @@ export async function GET() {
                 { status: 404 },
             );
         }
-    } catch (error: any) {
+    } catch (error) {
         console.error('API error fetching watchlist:', error);
-
-        // Determine the status code from the error response if possible
-        const status = error.response?.status || 500;
-        const message = error.response?.data?.message || 'Failed to fetch watchlist';
-
-        return NextResponse.json({ message }, { status });
+        return NextResponse.json({ message: 'Failed to fetch watchlist' }, { status: 500 });
     }
 }

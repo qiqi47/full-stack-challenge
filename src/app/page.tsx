@@ -4,27 +4,33 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/ui/header';
 import Watchlist from '@/components/watchlist';
 import TradingViewChart from '@/components/TradingViewChart';
-import type { TradingViewChartProps } from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
 import Chatbox from '@/components/chatbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import AuthRoute from './AuthRoute';
-
-// Define an interface for the Watchlist object based on Alpaca's structure
-interface AlpacaWatchlist {
+export interface stock {
     id: string;
-    account_id: string;
+    cusip: string | null;
+    class: string;
+    exchange: string;
+    symbol: string;
     name: string;
-    created_at: string;
-    updated_at: string;
-    assets: any[]; // Define more specific type if needed
+    status: string;
+    tradable: boolean;
+    marginable: boolean;
+    maintenance_margin_requirement: number;
+    margin_requirement_long: string;
+    margin_requirement_short: string;
+    shortable: boolean;
+    easy_to_borrow: boolean;
+    fractionable: boolean;
+    attributes: string | null;
 }
 
 export default function TradingDashboard() {
     const [selectedTicker, setSelectedTicker] = useState<string | undefined>('');
-    const [stockData, setStockData] = useState<any>(null);
+    const [stockData, setStockData] = useState<stock[]>([]);
     const [loading, setLoading] = useState(true);
-    const [usingMockData, setUsingMockData] = useState(false);
     const [watchlistId, setWatchlistId] = useState<string>('');
     const [refetch, setRefetch] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,9 +58,9 @@ export default function TradingDashboard() {
                 } else {
                     console.log('No watchlists found for this account.');
                 }
-            } catch (err: any) {
-                console.error('Error fetching watchlist ID:', err);
-                setError(err.message || 'An unknown error occurred');
+            } catch (err) {
+                console.error('Error fetching watchlist ID:', err, error);
+                setError('An unknown error occurred');
             }
         };
 
@@ -63,7 +69,7 @@ export default function TradingDashboard() {
 
     useEffect(() => {
         if (!watchlistId) {
-            setStockData(null);
+            setStockData([]);
             setLoading(false);
             return;
         }
@@ -77,11 +83,11 @@ export default function TradingDashboard() {
                 if (response.response.assets) {
                     setStockData(response.response.assets);
                 } else {
-                    setStockData(null);
+                    setStockData([]);
                 }
             } catch (error) {
                 console.error('Failed to fetch watchlist details:', error);
-                setStockData(null);
+                setStockData([]);
             } finally {
                 setLoading(false);
             }
@@ -96,7 +102,7 @@ export default function TradingDashboard() {
     return (
         <AuthRoute>
             <div className="flex flex-col h-screen bg-gray-50">
-                <Header usingMockData={usingMockData} />
+                <Header />
                 <div className="flex flex-1 overflow-hidden">
                     <div className="flex-1 p-6 overflow-y-auto">
                         <Card className="p-4 mb-4 h-[400px]">
@@ -116,11 +122,7 @@ export default function TradingDashboard() {
                                         watchlistId={watchlistId}
                                         refetchWatchlist={refetchWatchlist}
                                         handleTickerSelect={handleTickerSelect}
-                                        currentSymbols={
-                                            stockData?.assets?.map(
-                                                (stock: { symbol: string }) => stock.symbol,
-                                            ) || []
-                                        }
+                                        currentSymbols={stockData.map((stock) => stock.symbol)}
                                     />
                                 </div>
                             )}

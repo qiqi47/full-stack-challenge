@@ -41,7 +41,7 @@ export async function DELETE(
             },
             { status: 200 }, // Use 200 OK for consistency
         );
-    } catch (error: any) {
+    } catch (error) {
         // Handle network errors or other exceptions during fetch
         console.error(`Network or unexpected error removing symbol ${symbolToRemove}:`, error);
         return NextResponse.json(

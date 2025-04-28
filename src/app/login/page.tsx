@@ -1,6 +1,6 @@
 'use client';
 
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
@@ -11,8 +11,6 @@ const Login = () => {
     const googleProvider = new GoogleAuthProvider();
 
     const [authing, setAuthing] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const signInWithGoogle = async () => {
@@ -25,6 +23,7 @@ const Login = () => {
             })
             .catch((err) => {
                 console.log(err);
+                setError(err.message);
                 setAuthing(false);
             });
     };

@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define mockStockData or import it if it exists elsewhere
-const mockStockData = { bar: {}, symbol: 'MOCK', isValid: true }; // Placeholder
-
 // Common headers to add to responses
 const responseHeaders = {
     'Cache-Control': 'public, max-age=60', // Cache for 60 seconds
@@ -39,7 +36,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(
             {
-                ...(res as any), // Assuming response is the data object
+                ...res, // Assuming response is the data object
                 symbol: upperSymbol,
                 isValid: true,
             },

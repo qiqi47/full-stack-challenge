@@ -2,7 +2,6 @@
 
 'use server';
 
-import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -105,6 +104,7 @@ export async function POST(request: Request) {
                     symbol = parsedArgs.symbol.toUpperCase();
                     action = 'get_stock_price';
                 } catch (error) {
+                    console.log(error, 'error');
                     result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
                 }
             }
