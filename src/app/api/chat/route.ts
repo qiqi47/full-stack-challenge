@@ -1,13 +1,11 @@
 // src/api/chat/service.ts
 
-import { removeSymbolFromWatchlist } from '../stocks/trading/service';
+'use server';
 
-import { fetchLatestStockBySymbol } from '../stocks/market/service';
-import { addSymbolToWatchlist } from '../stocks/trading/service';
 import { NextResponse } from 'next/server';
 
 export async function sendChatMessage(message: string) {
-    const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -80,7 +78,14 @@ export async function sendChatMessage(message: string) {
         let symbol = null;
 
         if (name === 'get_stock_price') {
-            const stockPrice = await fetchLatestStockBySymbol(parsedArgs.symbol.toUpperCase());
+            const stockPrice = await fetch(
+                `/api/market?symbol=${parsedArgs.symbol.toUpperCase()}`,
+            )
+                .then((res) => res.json())
+                .catch((err) => {
+                    console.error(err);
+                    return { isValid: false };
+                });
 
             if (stockPrice.isValid) {
                 result = `Current price of ${parsedArgs.symbol.toUpperCase()} is $${
@@ -94,15 +99,16 @@ export async function sendChatMessage(message: string) {
                 result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             }
         } else if (name === 'add_to_watchlist') {
-            const stockCheck = await fetchLatestStockBySymbol(parsedArgs.symbol.toUpperCase());
+            const stockCheck = await fetch(
+                `/api/market?symbol=${parsedArgs.symbol.toUpperCase()}`,
+            ).then((res) => res.json());
 
             if (!stockCheck.isValid) {
                 result = `Sorry, I couldn't find the stock symbol "${parsedArgs.symbol.toUpperCase()}". Please check if the symbol is correct.`;
             } else {
-                const addResult = await addSymbolToWatchlist(
-                    '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',
-                    parsedArgs.symbol.toUpperCase(),
-                );
+                const addResult = await fetch(
+                    `/api/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+                ).then((res) => res.json());
 
                 if (addResult.success) {
                     result = `Added ${parsedArgs.symbol.toUpperCase()} to your watchlist ✅`;
@@ -115,13 +121,19 @@ export async function sendChatMessage(message: string) {
                 }
             }
         } else if (name === 'remove_from_watchlist') {
-            await removeSymbolFromWatchlist(
-                '6fc50fc6-a23e-4d30-89bf-062afb5e31e9',
-                parsedArgs.symbol.toUpperCase(),
-            );
-            result = `Removed ${parsedArgs.symbol.toUpperCase()} from your watchlist 🗑️`;
-            action = 'remove_from_watchlist';
-            symbol = parsedArgs.symbol.toUpperCase();
+            const removeResult = await fetch(
+                `/api/watchlist/6fc50fc6-a23e-4d30-89bf-062afb5e31e9/symbols/${parsedArgs.symbol.toUpperCase()}`,
+            ).then((res) => res.json());
+
+            if (removeResult.success) {
+                result = `Removed ${parsedArgs.symbol.toUpperCase()} from your watchlist 🗑️`;
+                action = 'remove_from_watchlist';
+                symbol = parsedArgs.symbol.toUpperCase();
+            } else {
+                result = `Failed to remove ${parsedArgs.symbol.toUpperCase()} from your watchlist 🚫`;
+                action = null;
+                symbol = parsedArgs.symbol.toUpperCase();
+            }
         }
 
         return NextResponse.json({

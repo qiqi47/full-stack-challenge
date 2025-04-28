@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-interface TradingViewChartProps {
+// Export the interface
+export interface TradingViewChartProps {
     symbol: string;
     interval?: string;
     loading?: boolean;

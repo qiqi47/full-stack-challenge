@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { sendChatMessage } from '@/api/chat/route';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +31,10 @@ export default function Chatbox({
         setLoading(true);
 
         try {
-            const response = await sendChatMessage(input);
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                body: JSON.stringify({ message: input }),
+            });
             const data = await response.json();
             setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
 

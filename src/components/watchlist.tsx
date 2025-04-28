@@ -3,8 +3,9 @@ import React from 'react';
 import { TickerPrice } from './ticker-price';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Button } from './ui/button';
-import { Trash2 } from 'lucide-react';
-import { removeSymbolFromWatchlist } from '@/api/stocks/trading/service';
+import { Trash2, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Watchlist = ({
     stocks,
@@ -19,6 +20,8 @@ const Watchlist = ({
     watchlistId: string;
     refetchWatchlist: () => void;
 }) => {
+    const [isRemoving, setIsRemoving] = useState<Record<string, boolean>>({});
+
     if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
         return (
             <div className="text-muted-foreground text-center py-4">No stocks in watchlist</div>
@@ -26,8 +29,29 @@ const Watchlist = ({
     }
 
     const handleRemoveStock = async (symbol: string) => {
-        await removeSymbolFromWatchlist(watchlistId, symbol);
-        refetchWatchlist();
+        setIsRemoving((prev) => ({ ...prev, [symbol]: true }));
+
+        try {
+            const response = await fetch(
+                `/api/watchlist/${watchlistId}/symbols/${symbol.toUpperCase()}`,
+                {
+                    method: 'DELETE',
+                },
+            );
+
+            const result = await response.json();
+
+            if (!result.success) {
+                toast.error(result.message);
+            } else {
+                toast.success(result.message);
+                refetchWatchlist();
+            }
+        } catch (error) {
+            console.error('Network or unexpected error removing stock:', error);
+        } finally {
+            setIsRemoving((prev) => ({ ...prev, [symbol]: false }));
+        }
     };
 
     return (
@@ -83,21 +107,27 @@ const Watchlist = ({
                             />
                             <TableCell className="text-right">
                                 <Button
-                                    variant="outline"
-                                    className="cursor-pointer"
+                                    variant="ghost"
+                                    className="cursor-pointer text-red-500 hover:bg-red-100 hover:text-red-600"
                                     size="icon"
+                                    disabled={isRemoving[stock.symbol]}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleRemoveStock(stock.symbol);
                                     }}
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    {isRemoving[stock.symbol] ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Trash2 className="w-4 h-4" />
+                                    )}
                                 </Button>
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
+            <ToastContainer />
         </div>
     );
 };

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { fetchLatestStockBySymbol } from '@/api/stocks/market/service';
 import { TableCell } from './ui/table';
 
 export function TickerPrice({ ticker, selected }: { ticker: string; selected: boolean }) {
@@ -11,10 +10,11 @@ export function TickerPrice({ ticker, selected }: { ticker: string; selected: bo
 
         // Generate mock data for the ticker
         const latestStock = async () => {
-            const response = await fetchLatestStockBySymbol(ticker);
-            if (response) {
+            const response = await fetch(`/api/market?symbol=${ticker}`);
+            const res = await response.json();
+            if (res) {
                 try {
-                    setPrice(response);
+                    setPrice(res.bar.c);
                     setLoading(false);
                 } catch (error) {
                     console.error('Failed to fetch stock data:', error);
@@ -28,7 +28,7 @@ export function TickerPrice({ ticker, selected }: { ticker: string; selected: bo
     return (
         <>
             <TableCell className="px-4 py-3 text-right">
-                {price && price.bar ? `$${price.bar.c}` : 'Loading...'}
+                {price ? `$${price}` : 'Loading...'}
             </TableCell>
         </>
     );

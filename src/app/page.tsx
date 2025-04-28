@@ -2,80 +2,109 @@
 import { Card } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/ui/header';
-import { fetchWatchlist, fetchWatchlistById } from '@/api/stocks/trading/service';
 import Watchlist from '@/components/watchlist';
 import TradingViewChart from '@/components/TradingViewChart';
+import type { TradingViewChartProps } from '@/components/TradingViewChart';
 import TickerSearch from '@/components/ticker-search';
 import Chatbox from '@/components/chatbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import AuthRoute from './AuthRoute';
 
+// Define an interface for the Watchlist object based on Alpaca's structure
+interface AlpacaWatchlist {
+    id: string;
+    account_id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    assets: any[]; // Define more specific type if needed
+}
+
 export default function TradingDashboard() {
-    const [selectedTicker, setSelectedTicker] = useState();
+    const [selectedTicker, setSelectedTicker] = useState<string | undefined>('');
     const [stockData, setStockData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [usingMockData, setUsingMockData] = useState(false);
     const [watchlistId, setWatchlistId] = useState<string>('');
     const [refetch, setRefetch] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const refetchWatchlist = () => {
         setRefetch(!refetch);
     };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchWatchlistId = async () => {
             setLoading(true);
-            const response = await fetchWatchlist();
-            if (Array.isArray(response) && response.length > 0) {
-                setWatchlistId(response[0].id);
+            setError(null);
+            setWatchlistId('');
+            try {
+                const res = await fetch('/api/watchlist');
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch watchlists: ${res.statusText}`);
+                }
+                const data = await res.json();
+
+                if (data.success && data.watchlists && data.watchlists.length > 0) {
+                    setWatchlistId(data.watchlists[0].id);
+                } else if (!data.success) {
+                    throw new Error(data.message || 'Failed to get watchlists from API');
+                } else {
+                    console.log('No watchlists found for this account.');
+                }
+            } catch (err: any) {
+                console.error('Error fetching watchlist ID:', err);
+                setError(err.message || 'An unknown error occurred');
             }
-            setLoading(false);
         };
-        fetchData();
+
+        fetchWatchlistId();
     }, [refetch]);
 
     useEffect(() => {
-        if (!watchlistId) return; // If no id, don't execute
+        if (!watchlistId) {
+            setStockData(null);
+            setLoading(false);
+            return;
+        }
 
         const fetchData = async () => {
             setLoading(true);
-            const response = await fetchWatchlistById(watchlistId);
-            if (response) {
-                setStockData(response);
+            try {
+                const res = await fetch(`/api/watchlist/${watchlistId}`);
+                const response = await res.json();
+
+                if (response.response.assets) {
+                    setStockData(response.response.assets);
+                } else {
+                    setStockData(null);
+                }
+            } catch (error) {
+                console.error('Failed to fetch watchlist details:', error);
+                setStockData(null);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchData();
-    }, [watchlistId, refetch]); // Run when watchlistId or refetch changes
+    }, [watchlistId, refetch]);
 
-    // Handle ticker selection
     const handleTickerSelect = (ticker: string) => {
-        setSelectedTicker(ticker as any);
+        setSelectedTicker(ticker);
     };
-
+    console.log(stockData?.[0]?.symbol, 'stockData');
     return (
         <AuthRoute>
-            <div className="flex flex-col h-screen max-h-screen bg-slate-50">
+            <div className="flex flex-col h-screen bg-gray-50">
                 <Header usingMockData={usingMockData} />
-                {/* Main content area (70% width) */}
-
                 <div className="flex flex-1 overflow-hidden">
-                    <div className="w-full lg:w-[70%] p-4 overflow-auto">
-                        {/* Main Chart */}
-                        <Card className="w-full mb-4">
-                            <div className="h-[400px] w-full px-4">
-                                {loading ? (
-                                    <Skeleton className="h-[400px] w-full" />
-                                ) : (
-                                    <TradingViewChart
-                                        symbol={selectedTicker || stockData?.assets[0].symbol}
-                                        loading={loading}
-                                    />
-                                )}
-                            </div>
+                    <div className="flex-1 p-6 overflow-y-auto">
+                        <Card className="mb-6 h-[400px]">
+                            <TradingViewChart
+                                symbol={selectedTicker || stockData?.[0]?.symbol}
+                            />
                         </Card>
 
-                        {/* Favorites List */}
                         <div className="mb-4">
                             <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-lg font-semibold">Favorites</h3>
@@ -96,20 +125,30 @@ export default function TradingDashboard() {
                                 </div>
                             )}
 
-                            {loading ? (
+                            {loading && !stockData && watchlistId ? (
                                 <div className="space-y-2">
                                     {[...Array(5)].map((_, index) => (
                                         <Skeleton key={index} className="h-16 w-full" />
                                     ))}
                                 </div>
-                            ) : (
+                            ) : watchlistId ? (
                                 <Watchlist
-                                    stocks={stockData?.assets}
+                                    stocks={stockData}
                                     selectedTicker={selectedTicker || ''}
                                     handleTickerSelect={handleTickerSelect}
                                     watchlistId={watchlistId}
                                     refetchWatchlist={refetchWatchlist}
                                 />
+                            ) : (
+                                !loading && (
+                                    <div className="text-muted-foreground text-center py-4">
+                                        {error ? (
+                                            <span className="text-red-500">Error: {error}</span>
+                                        ) : (
+                                            'No watchlist found or selected.'
+                                        )}
+                                    </div>
+                                )
                             )}
                         </div>
                     </div>
@@ -123,13 +162,6 @@ export default function TradingDashboard() {
                         </div>
                     </div>
                 </div>
-
-                {/* Mobile chat button (visible on small screens) */}
-                {/* <div className="lg:hidden fixed bottom-4 right-4">
-                <Button className="rounded-full h-12 w-12 shadow-lg">
-                    <Send className="h-5 w-5" />
-                </Button>
-            </div> */}
             </div>
         </AuthRoute>
     );
