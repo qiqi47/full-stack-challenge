@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const watchlistId = params.id;
+export async function POST(request: Request, context: { params: { id: string } }) {
+    const watchlistId = context.params.id;
     const body = await request.json();
     const symbolToAdd = body.symbol.toUpperCase();
 
